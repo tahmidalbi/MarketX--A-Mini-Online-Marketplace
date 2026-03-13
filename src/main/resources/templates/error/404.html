@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not Found – MarketX</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+    <div class="status-page">
+        <div class="status-code">404</div>
+        <div class="status-title">Page Not Found</div>
+        <p class="status-desc"
+           th:text="${errorMessage != null ? errorMessage : 'The resource you\'re looking for doesn\'t exist or has been removed.'}"></p>
+        <a th:href="@{/}" class="btn btn-primary">Back to Home</a>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 MarketX. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

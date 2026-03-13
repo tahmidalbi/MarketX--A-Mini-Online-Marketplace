@@ -4,7 +4,32 @@
 <body>
 <nav class="navbar" th:fragment="navbar">
 
-    <!-- LEFT: auth controls -->
+    <!-- LEFT: Brand -->
+    <div class="nav-brand">
+        <a th:href="@{/}">
+            <div class="nav-logo-mark">
+                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 3l10 10M13 3L3 13"/>
+                </svg>
+            </div>
+            <span class="nav-wordmark">Market<span>X</span></span>
+        </a>
+    </div>
+
+    <!-- CENTER: Seller nav links -->
+    <div class="nav-center" sec:authorize="hasRole('SELLER')">
+        <a th:href="@{/seller/dashboard}"
+           th:classappend="${activePage == 'home'} ? ' active'"
+           class="nav-link">Home</a>
+        <a th:href="@{/seller/my-products}"
+           th:classappend="${activePage == 'my-products'} ? ' active'"
+           class="nav-link">My Products</a>
+        <a th:href="@{/seller/my-orders}"
+           th:classappend="${activePage == 'my-orders'} ? ' active'"
+           class="nav-link">My Orders</a>
+    </div>
+
+    <!-- RIGHT: Auth controls -->
     <div class="nav-auth">
 
         <div sec:authorize="!isAuthenticated()">
@@ -19,9 +44,6 @@
                 <a th:href="@{/admin/dashboard}" class="btn btn-sm btn-outline">Dashboard</a>
                 <a th:href="@{/admin/users}" class="btn btn-sm btn-outline">Users</a>
             </span>
-            <span sec:authorize="hasRole('SELLER')">
-                <a th:href="@{/seller/dashboard}" class="btn btn-sm btn-outline">Dashboard</a>
-            </span>
             <span sec:authorize="hasRole('BUYER')">
                 <a th:href="@{/buyer/dashboard}" class="btn btn-sm btn-outline">Dashboard</a>
             </span>
@@ -30,18 +52,6 @@
                 <button type="submit" class="btn btn-sm btn-outline">Sign out</button>
             </form>
         </div>
-    </div>
-
-    <!-- RIGHT: brand -->
-    <div class="nav-brand">
-        <a th:href="@{/}">
-            <div class="nav-logo-mark">
-                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 3l10 10M13 3L3 13"/>
-                </svg>
-            </div>
-            <span class="nav-wordmark">Market<span>X</span></span>
-        </a>
     </div>
 
 </nav>
