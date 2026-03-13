@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketX – Mini Online Marketplace</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+    <div class="hero">
+        <div class="hero-eyebrow">Mini Online Marketplace</div>
+        <h1>Buy, sell, and<br><span>discover anything</span></h1>
+        <p>A curated marketplace connecting buyers and sellers. Join thousands of users already trading on MarketX.</p>
+        <div class="hero-actions" sec:authorize="!isAuthenticated()">
+            <a th:href="@{/auth/register/buyer}" class="btn btn-primary">Start shopping</a>
+            <a th:href="@{/auth/register/seller}" class="btn btn-outline">Sell on MarketX</a>
+        </div>
+        <div sec:authorize="isAuthenticated()">
+            <a th:href="@{/}" class="btn btn-primary">Go to Dashboard</a>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 MarketX. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

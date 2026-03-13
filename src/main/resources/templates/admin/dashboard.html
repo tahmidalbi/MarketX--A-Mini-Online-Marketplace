@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard – MarketX</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+
+    <!-- Welcome banner -->
+    <div class="dashboard-welcome">
+        <h2>Admin Dashboard</h2>
+        <p>Welcome back, <span sec:authentication="principal.user.name"></span>.
+           Manage seller registrations and platform users below.</p>
+    </div>
+
+    <!-- Flash messages -->
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+    <!-- Pending Seller Registrations -->
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="page-header">
+            <h1>Pending Seller Requests</h1>
+            <a th:href="@{/admin/users}" class="btn btn-outline btn-sm">View All Users</a>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Registered On</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="seller, stat : ${pendingSellers}">
+                        <td th:text="${stat.count}"></td>
+                        <td th:text="${seller.name}"></td>
+                        <td th:text="${seller.email}"></td>
+                        <td th:text="${#temporals.format(seller.createdAt, 'dd MMM yyyy, HH:mm')}"></td>
+                        <td>
+                            <div class="td-actions">
+                                <!-- Approve -->
+                                <form th:action="@{/admin/sellers/{id}/approve(id=${seller.id})}"
+                                      method="post">
+                                    <button type="submit" class="btn btn-success">Approve</button>
+                                </form>
+                                <!-- Reject -->
+                                <form th:action="@{/admin/sellers/{id}/reject(id=${seller.id})}"
+                                      method="post">
+                                    <button type="submit" class="btn btn-danger">Reject</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(pendingSellers)}">
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <p>No pending seller registrations at this time.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<footer>
+    <p>&copy; 2025 MarketX. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

@@ -7,9 +7,9 @@ spring:
       enabled: false
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/marketx
+    username: postgres
+    password: 2021
 
   jpa:
     hibernate:
