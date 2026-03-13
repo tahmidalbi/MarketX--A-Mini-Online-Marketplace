@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.name} + ' – MarketX Admin'">User Detail</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+
+    <a th:href="@{/admin/users}" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        All Users
+    </a>
+
+    <!-- Flash messages -->
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+    <!-- User info + actions -->
+    <div class="user-detail-grid">
+
+        <!-- Profile card -->
+        <div class="card">
+            <div class="page-header" style="border:none;padding-bottom:0;margin-bottom:1.25rem;">
+                <h2 style="font-size:1.25rem;" th:text="${user.name}"></h2>
+                <span th:if="${user.role.name() == 'ADMIN'}"  class="badge badge-admin">Admin</span>
+                <span th:if="${user.role.name() == 'SELLER'}" class="badge badge-seller">Seller</span>
+                <span th:if="${user.role.name() == 'BUYER'}"  class="badge badge-buyer">Buyer</span>
+            </div>
+
+            <div class="user-meta">
+                <div class="user-meta-row">
+                    <span class="user-meta-label">Email</span>
+                    <span th:text="${user.email}"></span>
+                </div>
+                <div class="user-meta-row">
+                    <span class="user-meta-label">Status</span>
+                    <span th:if="${user.approvalStatus.name() == 'APPROVED'}" class="badge badge-approved">Active</span>
+                    <span th:if="${user.approvalStatus.name() == 'PENDING'}"  class="badge badge-pending">Pending</span>
+                    <span th:if="${user.approvalStatus.name() == 'REJECTED'}" class="badge badge-rejected">Disabled</span>
+                </div>
+                <div class="user-meta-row">
+                    <span class="user-meta-label">Joined</span>
+                    <span th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy')}"></span>
+                </div>
+                <div th:if="${user.role.name() == 'SELLER'}" class="user-meta-row">
+                    <span class="user-meta-label">Products</span>
+                    <span th:text="${sellerProducts != null ? sellerProducts.size() : 0} + ' listed'"></span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions" style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+
+                <!-- PENDING SELLER: approve / reject -->
+                <th:block th:if="${user.role.name() == 'SELLER' and user.approvalStatus.name() == 'PENDING'}">
+                    <form th:action="@{/admin/sellers/{id}/approve(id=${user.id})}" method="post" style="display:inline">
+                        <button type="submit" class="btn btn-success">Approve Seller</button>
+                    </form>
+                    <form th:action="@{/admin/sellers/{id}/reject(id=${user.id})}" method="post" style="display:inline">
+                        <button type="submit" class="btn btn-danger">Reject Seller</button>
+                    </form>
+                </th:block>
+
+                <!-- APPROVED non-admin: disable -->
+                <th:block th:if="${user.approvalStatus.name() == 'APPROVED' and user.role.name() != 'ADMIN'}">
+                    <form th:action="@{/admin/users/{id}/disable(id=${user.id})}" method="post" style="display:inline"
+                          onsubmit="return confirm('Disable this account?')">
+                        <button type="submit" class="btn btn-danger">Disable Account</button>
+                    </form>
+                </th:block>
+
+                <!-- REJECTED: re-enable -->
+                <th:block th:if="${user.approvalStatus.name() == 'REJECTED'}">
+                    <form th:action="@{/admin/users/{id}/enable(id=${user.id})}" method="post" style="display:inline">
+                        <button type="submit" class="btn btn-success">Enable Account</button>
+                    </form>
+                </th:block>
+
+                <!-- ADMIN: protected -->
+                <p th:if="${user.role.name() == 'ADMIN'}"
+                   style="color:var(--text-muted);font-size:.875rem;margin:0;">
+                    Admin accounts cannot be modified here.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Products section (sellers only) -->
+    <div th:if="${user.role.name() == 'SELLER'}" style="margin-top:2rem;">
+        <div class="section-header">
+            <h2>Listed Products</h2>
+            <span class="badge badge-seller"
+                  th:text="${sellerProducts != null ? sellerProducts.size() : 0} + ' products'"></span>
+        </div>
+
+        <div th:if="${sellerProducts == null or sellerProducts.isEmpty()}" class="empty-state-full">
+            <div class="empty-icon-lg">📦</div>
+            <h3>No products listed yet</h3>
+            <p>This seller hasn't added any products.</p>
+        </div>
+
+        <div th:unless="${sellerProducts == null or sellerProducts.isEmpty()}"
+             class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Listed On</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="p, stat : ${sellerProducts}">
+                        <td th:text="${stat.count}" style="color:var(--text-muted);font-size:.85rem;"></td>
+                        <td><strong th:text="${p.name}"></strong></td>
+                        <td><span class="badge-category" th:text="${p.category}"></span></td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(p.price, 1, 2)}"></td>
+                        <td>
+                            <span th:class="${p.quantity > 0} ? 'stock-chip stock-ok' : 'stock-chip stock-empty'"
+                                  th:text="${p.quantity > 0 ? p.quantity + ' in stock' : 'Out of stock'}"></span>
+                        </td>
+                        <td style="color:var(--text-muted);font-size:.85rem;"
+                            th:text="${#temporals.format(p.createdAt, 'dd MMM yyyy')}"></td>
+                        <td>
+                            <a th:href="@{/products/{id}(id=${p.id})}"
+                               class="btn btn-sm btn-outline">View</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<footer>
+    <p>&copy; 2025 MarketX. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
