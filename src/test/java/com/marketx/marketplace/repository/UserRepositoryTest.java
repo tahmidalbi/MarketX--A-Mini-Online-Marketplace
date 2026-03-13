@@ -64,4 +64,34 @@ class UserRepositoryTest {
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getEmail()).isEqualTo("seller@test.com");
     }
+
+    /**
+     * A seller whose account was disabled by an admin (approvalStatus set to REJECTED)
+     * must NOT appear in getPendingSellerRegistrations()-style queries. This validates
+     * the exclusion logic that the admin disable feature relies on at the repository level.
+     */
+    @Test
+    void findByRoleAndApprovalStatus_excludesDisabledSeller_fromPendingResults() {
+        User pendingSeller = User.builder()
+                .name("New Seller")
+                .email("new-seller@admin-test.com")
+                .password("encoded_password")
+                .role(Role.SELLER)
+                .approvalStatus(ApprovalStatus.PENDING)
+                .build();
+        User disabledSeller = User.builder()
+                .name("Banned Seller")
+                .email("banned-seller@admin-test.com")
+                .password("encoded_password")
+                .role(Role.SELLER)
+                .approvalStatus(ApprovalStatus.REJECTED)
+                .build();
+        userRepository.save(pendingSeller);
+        userRepository.save(disabledSeller);
+
+        List<User> pending = userRepository.findByRoleAndApprovalStatus(Role.SELLER, ApprovalStatus.PENDING);
+
+        assertThat(pending).hasSize(1);
+        assertThat(pending.get(0).getEmail()).isEqualTo("new-seller@admin-test.com");
+    }
 }
