@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register – MarketX</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+    <div class="card card-sm">
+        <h1>Create an Account</h1>
+        <p style="color:var(--text-muted); margin-bottom:1.75rem; font-size:.9rem;">
+            Choose how you want to join MarketX.
+        </p>
+
+        <div class="role-cards">
+            <a th:href="@{/auth/register/buyer}" class="role-card">
+                <div class="role-icon">🛒</div>
+                <h3>Buyer</h3>
+                <p>Browse products and place orders. Instant access.</p>
+            </a>
+
+            <a th:href="@{/auth/register/seller}" class="role-card">
+                <div class="role-icon">🏪</div>
+                <h3>Seller</h3>
+                <p>List your products and grow your business. Requires admin approval.</p>
+            </a>
+        </div>
+
+        <div class="form-footer" style="margin-top:1.75rem;">
+            Already have an account?
+            <a th:href="@{/auth/login}">Sign in</a>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 MarketX. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

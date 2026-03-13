@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Users – MarketX Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+
+    <div class="card">
+        <div class="page-header">
+            <h1>All Users</h1>
+            <a th:href="@{/admin/dashboard}" class="btn btn-outline btn-sm">Back to Dashboard</a>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Registered On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user, stat : ${users}">
+                        <td th:text="${stat.count}"></td>
+                        <td th:text="${user.name}"></td>
+                        <td th:text="${user.email}"></td>
+                        <td>
+                            <span th:if="${user.role.name() == 'ADMIN'}"  class="badge badge-admin">Admin</span>
+                            <span th:if="${user.role.name() == 'SELLER'}" class="badge badge-seller">Seller</span>
+                            <span th:if="${user.role.name() == 'BUYER'}"  class="badge badge-buyer">Buyer</span>
+                        </td>
+                        <td>
+                            <span th:if="${user.approvalStatus.name() == 'APPROVED'}" class="badge badge-approved">Approved</span>
+                            <span th:if="${user.approvalStatus.name() == 'PENDING'}"  class="badge badge-pending">Pending</span>
+                            <span th:if="${user.approvalStatus.name() == 'REJECTED'}" class="badge badge-rejected">Rejected</span>
+                        </td>
+                        <td th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy')}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(users)}">
+                        <td colspan="6">
+                            <div class="empty-state"><p>No users found.</p></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<footer>
+    <p>&copy; 2025 MarketX. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
