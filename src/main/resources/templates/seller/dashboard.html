@@ -32,7 +32,7 @@
             <input type="text" name="q" th:value="${q}"
                    placeholder="Search products, categories, descriptions…"
                    class="search-input" autocomplete="off" />
-            <select name="category" class="filter-select">
+            <select name="category" class="filter-select" onchange="this.form.submit()">
                 <option value="" th:selected="${selectedCategory == ''}">All categories</option>
                 <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"
                         th:selected="${selectedCategory == cat}"></option>
