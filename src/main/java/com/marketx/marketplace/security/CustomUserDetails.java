@@ -55,15 +55,12 @@ public class CustomUserDetails implements UserDetails {
     }
 
     /**
-     * REJECTED sellers cannot log in — account is "locked".
+     * Any user with REJECTED status cannot log in — account is "locked".
      * Spring Security throws LockedException → failure handler maps to ?error=rejected
      */
     @Override
     public boolean isAccountNonLocked() {
-        if (user.getRole() == Role.SELLER && user.getApprovalStatus() == ApprovalStatus.REJECTED) {
-            return false;
-        }
-        return true;
+        return user.getApprovalStatus() != ApprovalStatus.REJECTED;
     }
 
     @Override

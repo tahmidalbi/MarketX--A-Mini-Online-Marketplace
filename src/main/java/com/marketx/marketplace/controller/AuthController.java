@@ -28,9 +28,10 @@ public class AuthController {
 
         if (error != null) {
             String message = switch (error) {
-                case "pending"  -> "Your seller account is pending admin approval. Please wait.";
-                case "rejected" -> "Your seller account has been rejected by the admin.";
-                default         -> "Invalid email or password. Please try again.";
+                case "pending"   -> "Your seller account is pending admin approval. Please wait.";
+                case "rejected"  -> "Your seller account has been rejected by the admin.";
+                case "disabled"  -> "Your account has been disabled by an admin.";
+                default          -> "Invalid email or password. Please try again.";
             };
             model.addAttribute("errorMessage", message);
         }

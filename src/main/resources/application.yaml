@@ -1,15 +1,16 @@
 spring:
   application:
-    name: MarketX
+    name: marketx
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:marketx}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:2021}
+    driver-class-name: org.postgresql.Driver
 
   docker:
     compose:
-      enabled: false
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/marketx
-    username: postgres
-    password: 2021
+      file: compose-local.yaml
 
   jpa:
     hibernate:
@@ -18,6 +19,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  thymeleaf:
+    cache: false
 
   mvc:
     hiddenmethod:
