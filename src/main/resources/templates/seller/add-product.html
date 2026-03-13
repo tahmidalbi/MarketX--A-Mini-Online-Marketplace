@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product — MarketX</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+
+    <div class="page-header">
+        <div>
+            <a th:href="@{/seller/my-products}" class="back-link">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                My Products
+            </a>
+            <h1 style="margin-top:.4rem">Add Product</h1>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <form th:action="@{/seller/products}" th:object="${productDto}" method="post" novalidate>
+
+            <div class="form-grid">
+                <!-- Name -->
+                <div class="form-group" style="grid-column: span 2">
+                    <label for="name">Product Name</label>
+                    <input type="text" id="name" th:field="*{name}"
+                           placeholder="e.g. Wireless Headphones" autocomplete="off" />
+                    <span class="field-error" th:if="${#fields.hasErrors('name')}"
+                          th:errors="*{name}"></span>
+                </div>
+
+                <!-- Category -->
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" th:field="*{category}">
+                        <option value="" disabled selected>Select a category</option>
+                        <option th:each="cat : ${categories}"
+                                th:value="${cat}" th:text="${cat}"></option>
+                    </select>
+                    <span class="field-error" th:if="${#fields.hasErrors('category')}"
+                          th:errors="*{category}"></span>
+                </div>
+
+                <!-- Price -->
+                <div class="form-group">
+                    <label for="price">Price (USD)</label>
+                    <input type="number" id="price" th:field="*{price}"
+                           placeholder="0.00" step="0.01" min="0.01" />
+                    <span class="field-error" th:if="${#fields.hasErrors('price')}"
+                          th:errors="*{price}"></span>
+                </div>
+
+                <!-- Quantity -->
+                <div class="form-group">
+                    <label for="quantity">Quantity in Stock</label>
+                    <input type="number" id="quantity" th:field="*{quantity}"
+                           placeholder="0" min="0" />
+                    <span class="field-error" th:if="${#fields.hasErrors('quantity')}"
+                          th:errors="*{quantity}"></span>
+                </div>
+
+                <!-- Image URL -->
+                <div class="form-group">
+                    <label for="imageUrl">Image URL <span class="label-optional">(Optional)</span></label>
+                    <input type="url" id="imageUrl" th:field="*{imageUrl}"
+                           placeholder="https://example.com/image.jpg" />
+                </div>
+
+                <!-- Description -->
+                <div class="form-group" style="grid-column: span 2">
+                    <label for="description">Description</label>
+                    <textarea id="description" th:field="*{description}"
+                              rows="4" placeholder="Describe your product…"></textarea>
+                    <span class="field-error" th:if="${#fields.hasErrors('description')}"
+                          th:errors="*{description}"></span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a th:href="@{/seller/my-products}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Product
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</main>
+
+<footer>
+    <p>&copy; 2025 MarketX. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

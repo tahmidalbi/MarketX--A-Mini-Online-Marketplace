@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Products — MarketX</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+
+    <div class="page-header">
+        <div>
+            <h1>My Products</h1>
+            <p class="page-subtitle" th:text="${products.size()} + ' listing(s)'"></p>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div th:if="${products.isEmpty()}" class="empty-state-full">
+        <div class="empty-icon-lg">📦</div>
+        <h3>No products yet</h3>
+        <p>Start building your store by adding your first product.</p>
+        <a th:href="@{/seller/products/add}" class="btn btn-primary" style="margin-top:1.25rem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add First Product
+        </a>
+    </div>
+
+    <!-- Products table -->
+    <div class="table-wrapper" th:unless="${products.isEmpty()}">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:52px">Image</th>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th style="width:140px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="p : ${products}">
+                    <td>
+                        <div class="table-thumb">
+                            <img th:if="${p.imageUrl != null and !p.imageUrl.isEmpty()}"
+                                 th:src="${p.imageUrl}" th:alt="${p.name}" />
+                            <div th:unless="${p.imageUrl != null and !p.imageUrl.isEmpty()}"
+                                 class="table-thumb-placeholder">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="1.5"
+                                     stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <path d="M21 15l-5-5L5 21"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="td-name" th:text="${p.name}"></span>
+                    </td>
+                    <td>
+                        <span class="badge badge-category" th:text="${p.category}"></span>
+                    </td>
+                    <td>
+                        <span class="td-price"
+                              th:text="'$' + ${#numbers.formatDecimal(p.price, 1, 2)}"></span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${p.quantity > 0} ? 'badge-approved' : 'badge-rejected'"
+                              th:text="${p.quantity}"></span>
+                    </td>
+                    <td>
+                        <div class="td-actions">
+                            <a th:href="@{/seller/products/{id}/edit(id=${p.id})}"
+                               class="btn btn-sm btn-outline">Edit</a>
+                            <form th:action="@{/seller/products/{id}(id=${p.id})}"
+                                  method="post"
+                                  onsubmit="return confirm('Delete this product?')">
+                                <input type="hidden" name="_method" value="DELETE"/>
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+<!-- FAB: Add Product -->
+<a th:href="@{/seller/products/add}" class="fab" title="Add Product">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2.5" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+</a>
+
+<footer>
+    <p>&copy; 2025 MarketX. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
