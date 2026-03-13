@@ -16,6 +16,22 @@
         </a>
     </div>
 
+    <!-- CENTER: Admin nav links -->
+    <div class="nav-center" sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/admin/users}"
+           th:classappend="${activePage == 'users'} ? ' active'"
+           class="nav-link">Users</a>
+        <a th:href="@{/admin/products}"
+           th:classappend="${activePage == 'products'} ? ' active'"
+           class="nav-link">Products</a>
+        <a th:href="@{/admin/orders}"
+           th:classappend="${activePage == 'orders'} ? ' active'"
+           class="nav-link">Orders</a>
+        <a th:href="@{/admin/statistics}"
+           th:classappend="${activePage == 'statistics'} ? ' active'"
+           class="nav-link">Statistics</a>
+    </div>
+
     <!-- CENTER: Seller nav links -->
     <div class="nav-center" sec:authorize="hasRole('SELLER')">
         <a th:href="@{/seller/dashboard}"
@@ -40,10 +56,6 @@
         <div class="nav-user-info" sec:authorize="isAuthenticated()">
             <span>Hello, <strong sec:authentication="principal.user.name"></strong></span>
 
-            <span sec:authorize="hasRole('ADMIN')">
-                <a th:href="@{/admin/dashboard}" class="btn btn-sm btn-outline">Dashboard</a>
-                <a th:href="@{/admin/users}" class="btn btn-sm btn-outline">Users</a>
-            </span>
             <span sec:authorize="hasRole('BUYER')">
                 <a th:href="@{/buyer/dashboard}" class="btn btn-sm btn-outline">Dashboard</a>
             </span>

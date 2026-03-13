@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Users – MarketX Admin</title>
+    <title>Users – MarketX Admin</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
@@ -12,49 +12,58 @@
 
 <main>
 
-    <div class="card">
-        <div class="page-header">
-            <h1>All Users</h1>
-            <a th:href="@{/admin/dashboard}" class="btn btn-outline btn-sm">Back to Dashboard</a>
+    <div class="page-header">
+        <div>
+            <h1>Users</h1>
+            <p class="page-subtitle">All registered accounts on the platform</p>
         </div>
+        <span th:if="${pendingCount > 0}"
+              class="badge badge-pending"
+              th:text="${pendingCount} + ' pending seller(s)'"></span>
+    </div>
 
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Registered On</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="user, stat : ${users}">
-                        <td th:text="${stat.count}"></td>
-                        <td th:text="${user.name}"></td>
-                        <td th:text="${user.email}"></td>
-                        <td>
-                            <span th:if="${user.role.name() == 'ADMIN'}"  class="badge badge-admin">Admin</span>
-                            <span th:if="${user.role.name() == 'SELLER'}" class="badge badge-seller">Seller</span>
-                            <span th:if="${user.role.name() == 'BUYER'}"  class="badge badge-buyer">Buyer</span>
-                        </td>
-                        <td>
-                            <span th:if="${user.approvalStatus.name() == 'APPROVED'}" class="badge badge-approved">Approved</span>
-                            <span th:if="${user.approvalStatus.name() == 'PENDING'}"  class="badge badge-pending">Pending</span>
-                            <span th:if="${user.approvalStatus.name() == 'REJECTED'}" class="badge badge-rejected">Rejected</span>
-                        </td>
-                        <td th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy')}"></td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(users)}">
-                        <td colspan="6">
-                            <div class="empty-state"><p>No users found.</p></div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="user, stat : ${users}">
+                    <td th:text="${stat.count}" style="color:var(--text-muted);font-size:.85rem;"></td>
+                    <td><strong th:text="${user.name}"></strong></td>
+                    <td style="color:var(--text-muted);" th:text="${user.email}"></td>
+                    <td>
+                        <span th:if="${user.role.name() == 'ADMIN'}"  class="badge badge-admin">Admin</span>
+                        <span th:if="${user.role.name() == 'SELLER'}" class="badge badge-seller">Seller</span>
+                        <span th:if="${user.role.name() == 'BUYER'}"  class="badge badge-buyer">Buyer</span>
+                    </td>
+                    <td>
+                        <span th:if="${user.approvalStatus.name() == 'APPROVED'}" class="badge badge-approved">Approved</span>
+                        <span th:if="${user.approvalStatus.name() == 'PENDING'}"  class="badge badge-pending">Pending</span>
+                        <span th:if="${user.approvalStatus.name() == 'REJECTED'}" class="badge badge-rejected">Disabled</span>
+                    </td>
+                    <td style="color:var(--text-muted);font-size:.85rem;"
+                        th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy')}"></td>
+                    <td>
+                        <a th:href="@{/admin/users/{id}(id=${user.id})}"
+                           class="btn btn-sm btn-outline">View</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(users)}">
+                    <td colspan="7">
+                        <div class="empty-state"><p>No users found.</p></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
 </main>
