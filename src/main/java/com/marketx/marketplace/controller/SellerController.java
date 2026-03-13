@@ -35,9 +35,14 @@ public class SellerController {
     /* ── Home / Browse ────────────────────────────────────────── */
 
     @GetMapping("/dashboard")
-    public String dashboard(Authentication auth, Model model) {
+    public String dashboard(@RequestParam(required = false) String q,
+                            @RequestParam(required = false) String category,
+                            Authentication auth, Model model) {
         model.addAttribute("user", currentUser(auth));
-        model.addAttribute("products", productService.findAll());
+        model.addAttribute("products", productService.filter(q, category));
+        model.addAttribute("q", q != null ? q : "");
+        model.addAttribute("selectedCategory", category != null ? category : "");
+        model.addAttribute("categories", CATEGORIES);
         model.addAttribute("activePage", "home");
         return "seller/dashboard";
     }
@@ -64,7 +69,7 @@ public class SellerController {
         return "seller/add-product";
     }
 
-    @PostMapping("/products/add")
+    @PostMapping("/products")
     public String addProduct(@Valid @ModelAttribute ProductDto productDto,
                              BindingResult result,
                              Authentication auth,
@@ -100,7 +105,7 @@ public class SellerController {
         return "seller/edit-product";
     }
 
-    @PostMapping("/products/{id}/edit")
+    @PutMapping("/products/{id}")
     public String editProduct(@PathVariable Long id,
                               @Valid @ModelAttribute EditProductDto editDto,
                               BindingResult result,
@@ -120,7 +125,7 @@ public class SellerController {
 
     /* ── Delete Product ───────────────────────────────────────── */
 
-    @PostMapping("/products/{id}/delete")
+    @DeleteMapping("/products/{id}")
     public String deleteProduct(@PathVariable Long id, Authentication auth) {
         productService.deleteProduct(id, currentUser(auth));
         return "redirect:/seller/my-products";

@@ -20,5 +20,9 @@ public interface ProductService {
 
     List<Product> findAll();
 
+    List<Product> search(String query);
+
+    List<Product> filter(String query, String category);
+
     Optional<Product> findById(Long id);
 }

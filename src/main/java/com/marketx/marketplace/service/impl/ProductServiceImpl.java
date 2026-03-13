@@ -72,6 +72,28 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Product> search(String query) {
+        if (query == null || query.isBlank()) return findAll();
+        return productRepository.searchByQuery(query.trim());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Product> filter(String query, String category) {
+        boolean hasQuery    = query    != null && !query.isBlank();
+        boolean hasCategory = category != null && !category.isBlank();
+        if (hasQuery && hasCategory) {
+            return productRepository.searchByQuery(query.trim()).stream()
+                    .filter(p -> p.getCategory().equals(category))
+                    .toList();
+        }
+        if (hasQuery)    return productRepository.searchByQuery(query.trim());
+        if (hasCategory) return productRepository.findByCategoryOrderByCreatedAtDesc(category);
+        return productRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Product> findById(Long id) {
         return productRepository.findById(id);
     }

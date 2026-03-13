@@ -20,14 +20,56 @@
         <span class="badge badge-seller" th:text="${products.size()} + ' listings'"></span>
     </div>
 
-    <div th:if="${products.isEmpty()}" class="empty-state">
-        <div class="empty-icon">🛍️</div>
-        <p style="margin-top:.75rem; font-size:.9rem;">No products listed yet. Be the first to add one.</p>
-        <a th:href="@{/seller/products/add}" class="btn btn-primary" style="margin-top:1rem">Add Your First Product</a>
+    <!-- Search + Filter -->
+    <div class="search-section">
+        <form th:action="@{/seller/dashboard}" method="get" class="search-form">
+            <div class="search-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+            </div>
+            <input type="text" name="q" th:value="${q}"
+                   placeholder="Search products, categories, descriptions…"
+                   class="search-input" autocomplete="off" />
+            <select name="category" class="filter-select">
+                <option value="" th:selected="${selectedCategory == ''}">All categories</option>
+                <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"
+                        th:selected="${selectedCategory == cat}"></option>
+            </select>
+            <a th:if="${(q != null and !q.isEmpty()) or (selectedCategory != null and !selectedCategory.isEmpty())}"
+               th:href="@{/seller/dashboard}" class="search-clear" title="Clear all">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </a>
+        </form>
+        <div class="search-meta"
+             th:if="${(q != null and !q.isEmpty()) or (selectedCategory != null and !selectedCategory.isEmpty())}">
+            <span th:text="${products.size()} + ' result(s)'
+                + (${q != null and !q.isEmpty()} ? ' for \'' + ${q} + '\'' : '')
+                + (${selectedCategory != null and !selectedCategory.isEmpty()} ? ' in ' + ${selectedCategory} : '')">
+            </span>
+        </div>
     </div>
 
+    <!-- Empty state -->
+    <div th:if="${products.isEmpty()}" class="empty-state-full">
+        <div class="empty-icon-lg">🛍️</div>
+        <h3 th:if="${(q != null and !q.isEmpty()) or (selectedCategory != null and !selectedCategory.isEmpty())}">No results found</h3>
+        <h3 th:unless="${(q != null and !q.isEmpty()) or (selectedCategory != null and !selectedCategory.isEmpty())}">No products listed yet</h3>
+        <p>Be the first to add one.</p>
+        <a th:href="@{/seller/products/add}" class="btn btn-primary" style="margin-top:1.25rem">
+            Add Your First Product
+        </a>
+    </div>
+
+    <!-- Product grid — each card is a link -->
     <div class="product-grid" th:unless="${products.isEmpty()}">
-        <div class="product-card" th:each="p : ${products}">
+        <a th:each="p : ${products}"
+           th:href="@{/products/{id}(id=${p.id})}"
+           class="product-card">
             <div class="product-img-wrap">
                 <img th:if="${p.imageUrl != null and !p.imageUrl.isEmpty()}"
                      th:src="${p.imageUrl}" th:alt="${p.name}" class="product-img" />
@@ -37,8 +79,7 @@
                          stroke="currentColor" stroke-width="1.5"
                          stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="18" height="18" rx="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <path d="M21 15l-5-5L5 21"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
                     </svg>
                 </div>
                 <span class="product-category-badge" th:text="${p.category}"></span>
@@ -50,12 +91,11 @@
                 <div class="product-footer">
                     <span class="product-price"
                           th:text="'$' + ${#numbers.formatDecimal(p.price, 1, 2)}"></span>
-                    <span class="product-stock"
-                          th:classappend="${p.quantity == 0} ? ' out-of-stock'"
-                          th:text="${p.quantity > 0} ? p.quantity + ' in stock' : 'Out of stock'"></span>
+                    <span th:class="${p.quantity > 0} ? 'stock-chip stock-ok' : 'stock-chip stock-empty'"
+                          th:text="${p.quantity > 0 ? p.quantity + ' in stock' : 'Out of stock'}"></span>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
 </main>

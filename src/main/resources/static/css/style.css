@@ -1090,3 +1090,292 @@ footer {
     background: var(--border);
     margin-bottom: 1.5rem;
 }
+
+/* =====================
+   STOCK CHIP (prominent quantity)
+   ===================== */
+.stock-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .22rem .65rem;
+    border-radius: 999px;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+.stock-chip.stock-ok {
+    background: var(--success-dim);
+    color: var(--success);
+    border-color: var(--success-border);
+}
+
+.stock-chip.stock-empty {
+    background: var(--danger-dim);
+    color: var(--danger);
+    border-color: var(--danger-border);
+}
+
+/* =====================
+   LANDING HERO (compact)
+   ===================== */
+.landing-hero {
+    text-align: center;
+    padding: 3.5rem 1rem 2.5rem;
+    position: relative;
+}
+
+.landing-hero::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 200px;
+    background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.landing-hero > * { position: relative; }
+
+.landing-hero h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.landing-hero h1 span {
+    background: linear-gradient(135deg, var(--accent-light) 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.landing-hero p {
+    font-size: .9rem;
+    color: var(--text-muted);
+    margin-bottom: 1.75rem;
+}
+
+/* =====================
+   SEARCH BAR
+   ===================== */
+.search-section {
+    margin-bottom: 1.75rem;
+}
+
+.search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 520px;
+}
+
+.search-icon {
+    position: absolute;
+    left: .9rem;
+    pointer-events: none;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    padding: .7rem 2.75rem .7rem 2.5rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    font-size: .875rem;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+}
+
+.search-input::placeholder { color: var(--text-dim); }
+
+.search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: var(--bg-elevated);
+}
+
+.search-clear {
+    position: absolute;
+    right: .85rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: color .15s;
+}
+
+.search-clear:hover { color: var(--text); text-decoration: none; }
+
+.search-meta {
+    margin-top: .6rem;
+    font-size: .75rem;
+    color: var(--text-muted);
+}
+
+/* =====================
+   SECTION HEADER
+   ===================== */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.section-header h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -.15px;
+}
+
+/* =====================
+   PRODUCT CARD AS LINK
+   ===================== */
+a.product-card {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+}
+
+a.product-card:hover { text-decoration: none; color: inherit; }
+
+/* =====================
+   PRODUCT DETAIL PAGE
+   ===================== */
+.product-detail {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+    max-width: 960px;
+}
+
+@media (max-width: 680px) {
+    .product-detail { grid-template-columns: 1fr; }
+}
+
+.product-detail-img-panel { position: sticky; top: 72px; }
+
+.product-detail-img-wrap {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+}
+
+.product-detail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.product-detail-img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    color: var(--text-dim);
+    font-size: .78rem;
+}
+
+.product-detail-tags {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .9rem;
+    flex-wrap: wrap;
+}
+
+.product-detail-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -.5px;
+    line-height: 1.25;
+    margin-bottom: .6rem;
+}
+
+.product-detail-seller {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .8rem;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+}
+
+.product-detail-seller strong { color: var(--text-body); font-weight: 500; }
+
+.product-detail-price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -1px;
+    margin-bottom: 1.25rem;
+}
+
+.product-detail-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.25rem 0;
+}
+
+.product-detail-desc-label {
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    margin-bottom: .6rem;
+}
+
+.product-detail-desc {
+    font-size: .9rem;
+    color: var(--text-body);
+    line-height: 1.7;
+}
+
+.product-detail-action {
+    margin-top: 1.5rem;
+}
+
+/* ── Category filter select ─────────────────────────────── */
+
+.filter-select {
+    height: 100%;
+    border: none;
+    border-left: 1px solid var(--border);
+    border-radius: 0;
+    background: var(--surface);
+    color: var(--text);
+    font-size: .85rem;
+    padding: 0 .85rem;
+    cursor: pointer;
+    outline: none;
+    min-width: 140px;
+}
+
+.filter-select:focus {
+    background: var(--surface-hover, var(--surface));
+}

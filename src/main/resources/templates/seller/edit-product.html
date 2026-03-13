@@ -59,8 +59,9 @@
         <div class="form-divider"></div>
 
         <!-- Editable fields -->
-        <form th:action="@{/seller/products/{id}/edit(id=${product.id})}"
+        <form th:action="@{/seller/products/{id}(id=${product.id})}"
               th:object="${editDto}" method="post" novalidate>
+            <input type="hidden" name="_method" value="PUT"/>
 
             <div class="form-grid">
                 <!-- Price -->
