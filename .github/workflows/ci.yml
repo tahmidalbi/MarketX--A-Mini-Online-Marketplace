@@ -29,11 +29,5 @@ jobs:
           java-version: 22
           cache: maven
 
-      - name: Build Project
-        run: mvn -B clean compile
-
-      - name: Run Tests
-        run: mvn test
-
-      - name: Package Application
-        run: mvn package
+      - name: Build, Test and Package
+        run: mvn -B clean verify
