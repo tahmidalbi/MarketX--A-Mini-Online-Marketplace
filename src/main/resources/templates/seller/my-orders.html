@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders — MarketX</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+
+    <div class="page-header">
+        <div>
+            <h1>My Orders</h1>
+            <p class="page-subtitle">Orders placed on your products</p>
+        </div>
+    </div>
+
+    <div class="empty-state-full">
+        <div class="empty-icon-lg">📋</div>
+        <h3>Coming soon</h3>
+        <p>Order management will be available in the next update.</p>
+    </div>
+
+</main>
+
+<footer>
+    <p>&copy; 2025 MarketX. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

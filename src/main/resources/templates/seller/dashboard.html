@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seller Dashboard – MarketX</title>
+    <title>MarketX — Marketplace</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
@@ -12,16 +12,50 @@
 
 <main>
 
-    <div class="dashboard-welcome">
-        <h2>Welcome, <span th:text="${user.name}"></span>!</h2>
-        <p>You are logged in as a <strong>Seller</strong>. Start listing your products to reach buyers.</p>
+    <div class="page-header">
+        <div>
+            <h1>Marketplace</h1>
+            <p class="page-subtitle">Browse all products from our sellers</p>
+        </div>
+        <span class="badge badge-seller" th:text="${products.size()} + ' listings'"></span>
     </div>
 
-    <div class="card">
-        <h2 style="margin-bottom:1rem;">Your Seller Hub</h2>
-        <p style="color:var(--text-muted);">
-            Product management features are coming soon. Stay tuned!
-        </p>
+    <div th:if="${products.isEmpty()}" class="empty-state">
+        <div class="empty-icon">🛍️</div>
+        <p style="margin-top:.75rem; font-size:.9rem;">No products listed yet. Be the first to add one.</p>
+        <a th:href="@{/seller/products/add}" class="btn btn-primary" style="margin-top:1rem">Add Your First Product</a>
+    </div>
+
+    <div class="product-grid" th:unless="${products.isEmpty()}">
+        <div class="product-card" th:each="p : ${products}">
+            <div class="product-img-wrap">
+                <img th:if="${p.imageUrl != null and !p.imageUrl.isEmpty()}"
+                     th:src="${p.imageUrl}" th:alt="${p.name}" class="product-img" />
+                <div th:unless="${p.imageUrl != null and !p.imageUrl.isEmpty()}"
+                     class="product-img-placeholder">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <path d="M21 15l-5-5L5 21"/>
+                    </svg>
+                </div>
+                <span class="product-category-badge" th:text="${p.category}"></span>
+            </div>
+            <div class="product-card-body">
+                <p class="product-seller">by <span th:text="${p.seller.name}"></span></p>
+                <h3 class="product-name" th:text="${p.name}"></h3>
+                <p class="product-desc" th:text="${p.description}"></p>
+                <div class="product-footer">
+                    <span class="product-price"
+                          th:text="'$' + ${#numbers.formatDecimal(p.price, 1, 2)}"></span>
+                    <span class="product-stock"
+                          th:classappend="${p.quantity == 0} ? ' out-of-stock'"
+                          th:text="${p.quantity > 0} ? p.quantity + ' in stock' : 'Out of stock'"></span>
+                </div>
+            </div>
+        </div>
     </div>
 
 </main>
