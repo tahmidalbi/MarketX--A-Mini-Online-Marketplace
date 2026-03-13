@@ -1379,3 +1379,120 @@ a.product-card:hover { text-decoration: none; color: inherit; }
 .filter-select:focus {
     background: var(--surface-hover, var(--surface));
 }
+
+/* ── Page subtitle ──────────────────────────────────────── */
+
+.page-subtitle {
+    color: var(--text-muted);
+    font-size: .875rem;
+    margin: .2rem 0 0;
+}
+
+/* ── Admin stats grid ───────────────────────────────────── */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color .15s, background .15s;
+}
+
+.stat-card:hover {
+    border-color: var(--accent);
+    background: var(--surface-2, var(--surface));
+}
+
+.stat-card.stat-warn {
+    border-color: var(--warning, #f59e0b);
+}
+
+.stat-card.stat-warn:hover {
+    border-color: var(--warning, #f59e0b);
+    background: rgba(245, 158, 11, .06);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: .35rem;
+}
+
+.stat-warn .stat-number {
+    color: var(--warning, #f59e0b);
+}
+
+.stat-label {
+    font-size: .8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* ── Admin user detail ──────────────────────────────────── */
+
+.user-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 420px);
+    gap: 1.5rem;
+}
+
+.user-meta {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.user-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: .9rem;
+}
+
+.user-meta-label {
+    width: 80px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+/* ── Admin product card (with remove button) ────────────── */
+
+.admin-product-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+}
+
+.product-card-link {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    text-decoration: none;
+    color: inherit;
+}
+
+.product-card-link:hover .product-name {
+    color: var(--accent-light, var(--accent));
+}
+
+.admin-product-actions {
+    padding: .6rem .9rem .9rem;
+    border-top: 1px solid var(--border);
+}
