@@ -1,6 +1,7 @@
 package com.marketx.marketplace.service;
 
 import com.marketx.marketplace.dto.BuyerRegistrationDto;
+import com.marketx.marketplace.dto.ProfileUpdateDto;
 import com.marketx.marketplace.dto.SellerRegistrationDto;
 import com.marketx.marketplace.entity.User;
 
@@ -15,4 +16,6 @@ public interface UserService {
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    void updateProfile(Long userId, ProfileUpdateDto dto);
 }
