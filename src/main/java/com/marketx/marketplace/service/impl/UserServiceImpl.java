@@ -1,6 +1,7 @@
 package com.marketx.marketplace.service.impl;
 
 import com.marketx.marketplace.dto.BuyerRegistrationDto;
+import com.marketx.marketplace.dto.ProfileUpdateDto;
 import com.marketx.marketplace.dto.SellerRegistrationDto;
 import com.marketx.marketplace.entity.ApprovalStatus;
 import com.marketx.marketplace.entity.Role;
@@ -77,5 +78,20 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public void updateProfile(Long userId, ProfileUpdateDto dto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
+            throw new UserAlreadyExistsException("Email '" + dto.getEmail() + "' is already in use.");
+        }
+
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        userRepository.save(user);
     }
 }
