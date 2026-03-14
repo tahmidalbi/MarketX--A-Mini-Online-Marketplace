@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile – MarketX</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+    <div class="profile-page">
+
+        <!-- Avatar + header -->
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="profile-name" th:text="${user.name}"></h1>
+                <span class="badge badge-buyer">Buyer</span>
+                <p class="profile-meta">
+                    Member since
+                    <span th:text="${#temporals.format(user.createdAt, 'MMM d, yyyy')}"></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+        <!-- Edit form -->
+        <div class="card profile-card">
+            <h2 class="section-title">Edit Profile</h2>
+
+            <form th:action="@{/buyer/profile}" th:object="${profileDto}" method="post">
+
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" th:field="*{name}"
+                           placeholder="Your full name" autofocus>
+                    <span class="field-error" th:if="${#fields.hasErrors('name')}"
+                          th:errors="*{name}"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" th:field="*{email}"
+                           placeholder="you@example.com">
+                    <span class="field-error" th:if="${#fields.hasErrors('email')}"
+                          th:errors="*{email}"></span>
+                </div>
+
+                <div class="profile-actions">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a th:href="@{/buyer/dashboard}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2025 MarketX. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
