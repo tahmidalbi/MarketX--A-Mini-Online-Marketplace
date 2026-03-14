@@ -19,6 +19,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   thymeleaf:
     cache: false
@@ -29,4 +30,4 @@ spring:
         enabled: true
 
 server:
-  port: 8081
+  port: ${PORT:8080}
