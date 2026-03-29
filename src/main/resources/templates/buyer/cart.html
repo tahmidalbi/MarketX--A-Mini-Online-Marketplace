@@ -82,7 +82,7 @@
                                 </form>
                             </td>
                             <td>
-                                <span class="td-price" th:text="'$' + ${#numbers.formatDecimal(item.product.price.multiply(T(java.math.BigDecimal).valueOf(item.quantity)), 1, 2)}"></span>
+                                <span class="td-price" th:text="'$' + ${#numbers.formatDecimal(item.product.price * item.quantity, 1, 2)}"></span>
                             </td>
                             <td>
                                 <form th:action="@{/buyer/cart/{id}/remove(id=${item.id})}" method="post">
@@ -103,7 +103,7 @@
 
             <div class="summary-row" th:each="item : ${cartItems}">
                 <span th:text="${item.product.name}" style="color:var(--text-muted);font-size:.8rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-                <span th:text="'$' + ${#numbers.formatDecimal(item.product.price.multiply(T(java.math.BigDecimal).valueOf(item.quantity)), 1, 2)}" style="font-size:.8rem"></span>
+                <span th:text="'$' + ${#numbers.formatDecimal(item.product.price * item.quantity, 1, 2)}" style="font-size:.8rem"></span>
             </div>
 
             <div class="summary-divider"></div>
