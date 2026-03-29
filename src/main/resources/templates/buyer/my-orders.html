@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders — MarketX</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+
+    <div class="page-header">
+        <div>
+            <h1>My Orders</h1>
+            <p class="page-subtitle" th:text="${orders.size()} + ' order(s)'"></p>
+        </div>
+        <a th:href="@{/buyer/dashboard}" class="btn btn-outline">Shop More</a>
+    </div>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+    <!-- Empty state -->
+    <div th:if="${orders.isEmpty()}" class="empty-state-full">
+        <div class="empty-icon-lg">📦</div>
+        <h3>No orders yet</h3>
+        <p>Once you place an order it will appear here.</p>
+        <a th:href="@{/buyer/dashboard}" class="btn btn-primary" style="margin-top:1.25rem">Start Shopping</a>
+    </div>
+
+    <!-- Orders List -->
+    <div th:unless="${orders.isEmpty()}" class="orders-list">
+        <div th:each="order : ${orders}" class="order-card card">
+
+            <!-- Order Header -->
+            <div class="order-card-header">
+                <div>
+                    <span class="order-id" th:text="'Order #' + ${order.id}"></span>
+                    <span class="order-date" th:text="${#temporals.format(order.createdAt, 'dd MMM yyyy, HH:mm')}"></span>
+                </div>
+                <div style="display:flex;align-items:center;gap:.75rem">
+                    <span th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}" class="order-total-badge"></span>
+                    <span th:class="'badge order-status-badge ' + ${order.status.name().toLowerCase().replace('_','-')}"
+                          th:text="${order.status.name().replace('_',' ')}"></span>
+                </div>
+            </div>
+
+            <!-- Progress Timeline -->
+            <div class="order-timeline">
+                <!-- Step 1: ORDER_PLACED -->
+                <div th:class="'timeline-step ' + (${order.status.ordinal() >= 0} ? 'done' : '')">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-label">Order Placed</div>
+                </div>
+                <!-- Step 2: CONFIRMED -->
+                <div class="timeline-connector" th:class="'timeline-connector ' + (${order.status.ordinal() >= 1} ? 'done' : '')"></div>
+                <div th:class="'timeline-step ' + (${order.status.ordinal() >= 1} ? 'done' : '')">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-label">Confirmed</div>
+                </div>
+                <!-- Step 3: PROCESSING -->
+                <div class="timeline-connector" th:class="'timeline-connector ' + (${order.status.ordinal() >= 2} ? 'done' : '')"></div>
+                <div th:class="'timeline-step ' + (${order.status.ordinal() >= 2} ? 'done' : '')">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-label">Processing</div>
+                </div>
+                <!-- Step 4: SENT FOR DELIVERY -->
+                <div class="timeline-connector" th:class="'timeline-connector ' + (${order.status.ordinal() >= 3} ? 'done' : '')"></div>
+                <div th:class="'timeline-step ' + (${order.status.ordinal() >= 3} ? 'done' : '')">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-label">Sent for Delivery</div>
+                </div>
+                <!-- Step 5: OUT FOR DELIVERY -->
+                <div class="timeline-connector" th:class="'timeline-connector ' + (${order.status.ordinal() >= 4} ? 'done' : '')"></div>
+                <div th:class="'timeline-step ' + (${order.status.ordinal() >= 4} ? 'done' : '')">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-label">Out for Delivery</div>
+                </div>
+                <!-- Step 6: DELIVERED -->
+                <div class="timeline-connector" th:class="'timeline-connector ' + (${order.status.ordinal() >= 5} ? 'done' : '')"></div>
+                <div th:class="'timeline-step ' + (${order.status.ordinal() >= 5} ? 'done' : '')">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-label">Delivered</div>
+                </div>
+            </div>
+
+            <!-- Items in order -->
+            <div class="order-items-preview">
+                <p class="order-items-label">Items</p>
+                <div th:each="item : ${order.items}" class="order-item-chip">
+                    <span th:text="${item.productName}"></span>
+                    <span class="order-item-chip-qty" th:text="'×' + ${item.quantity}"></span>
+                </div>
+            </div>
+
+            <!-- Shipping address -->
+            <p style="font-size:.75rem;color:var(--text-muted);margin-top:.75rem">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:.3rem"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span th:text="${order.shippingAddress}"></span>
+            </p>
+
+        </div>
+    </div>
+
+</main>
+
+<footer><p>&copy; 2025 MarketX. All rights reserved.</p></footer>
+
+</body>
+</html>
