@@ -171,9 +171,9 @@ class BuyerControllerIT {
     }
 
     /**
-     * POST /buyer/checkout with a valid cart and shipping address must place the
-     * order and redirect to /buyer/my-orders. The order must be persisted in the
-     * database and the cart must be cleared afterwards.
+     * POST /buyer/checkout with a valid cart and shipping address must store
+     * the address in session and redirect to /buyer/payment (the SSLCommerz
+     * review page). The order is placed only after payment validation.
      */
     @Test
     void placeOrder_withValidCartAndAddress_createsOrderAndRedirectsToMyOrders() throws Exception {
@@ -192,23 +192,12 @@ class BuyerControllerIT {
                     .buyer(buyer).product(product).quantity(1).build());
         });
 
-        long ordersBefore = transactionTemplate.execute(s ->
-                (long) orderRepository.findByBuyerOrderByCreatedAtDesc(buyer).size());
-
         mockMvc.perform(post("/buyer/checkout")
                         .param("shippingAddress", "456 Test Avenue, Test City")
                         .with(user(new CustomUserDetails(buyer)))
                         .with(csrf()))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/buyer/my-orders"));
-
-        long ordersAfter = transactionTemplate.execute(s ->
-                (long) orderRepository.findByBuyerOrderByCreatedAtDesc(buyer).size());
-        assertThat(ordersAfter).isEqualTo(ordersBefore + 1);
-
-        long cartCount = transactionTemplate.execute(s ->
-                cartItemRepository.countByBuyer(buyer));
-        assertThat(cartCount).isEqualTo(0);
+                .andExpect(redirectedUrl("/buyer/payment"));
     }
 
     /**

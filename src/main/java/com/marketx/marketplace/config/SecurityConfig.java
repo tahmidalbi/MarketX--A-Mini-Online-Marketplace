@@ -26,6 +26,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers(
+                    "/buyer/payment/success",
+                    "/buyer/payment/fail",
+                    "/buyer/payment/cancel"
+                )
+            )
             .userDetailsService(customUserDetailsService)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
