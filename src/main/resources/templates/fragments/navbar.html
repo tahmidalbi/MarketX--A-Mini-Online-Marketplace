@@ -4,7 +4,6 @@
 <body>
 <nav class="navbar" th:fragment="navbar">
 
-    <!-- LEFT: Brand -->
     <div class="nav-brand">
         <a th:href="@{/}">
             <div class="nav-logo-mark">
@@ -16,7 +15,6 @@
         </a>
     </div>
 
-    <!-- CENTER: Admin nav links -->
     <div class="nav-center" sec:authorize="hasRole('ADMIN')">
         <a th:href="@{/admin/users}"
            th:classappend="${activePage == 'users'} ? ' active'"
@@ -32,7 +30,6 @@
            class="nav-link">Statistics</a>
     </div>
 
-    <!-- CENTER: Seller nav links -->
     <div class="nav-center" sec:authorize="hasRole('SELLER')">
         <a th:href="@{/seller/dashboard}"
            th:classappend="${activePage == 'home'} ? ' active'"
@@ -43,22 +40,23 @@
         <a th:href="@{/seller/my-orders}"
            th:classappend="${activePage == 'my-orders'} ? ' active'"
            class="nav-link">My Orders</a>
+        <a th:href="@{/seller/analytics}"
+           th:classappend="${activePage == 'analytics'} ? ' active'"
+           class="nav-link">Analytics</a>
     </div>
 
-    <!-- CENTER: Buyer nav links -->
     <div class="nav-center" sec:authorize="hasRole('BUYER')">
         <a th:href="@{/buyer/dashboard}"
            th:classappend="${activePage == 'home'} ? ' active'"
            class="nav-link">Home</a>
-        <a href="#"
+        <a th:href="@{/buyer/cart}"
            th:classappend="${activePage == 'cart'} ? ' active'"
            class="nav-link">Cart</a>
-        <a href="#"
+        <a th:href="@{/buyer/my-orders}"
            th:classappend="${activePage == 'my-orders'} ? ' active'"
            class="nav-link">My Orders</a>
     </div>
 
-    <!-- RIGHT: Auth controls -->
     <div class="nav-auth">
 
         <div sec:authorize="!isAuthenticated()">
