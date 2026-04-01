@@ -1,5 +1,10 @@
 package com.marketx.marketplace.service.impl;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.marketx.marketplace.entity.ApprovalStatus;
 import com.marketx.marketplace.entity.Product;
 import com.marketx.marketplace.entity.Role;
@@ -7,12 +12,9 @@ import com.marketx.marketplace.entity.User;
 import com.marketx.marketplace.repository.ProductRepository;
 import com.marketx.marketplace.repository.UserRepository;
 import com.marketx.marketplace.service.AdminService;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,12 @@ public class AdminServiceImpl implements AdminService {
     @Transactional(readOnly = true)
     public List<User> getPendingSellerRegistrations() {
         return userRepository.findByRoleAndApprovalStatus(Role.SELLER, ApprovalStatus.PENDING);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getPendingSellerCount() {
+        return userRepository.countByRoleAndApprovalStatus(Role.SELLER, ApprovalStatus.PENDING);
     }
 
     @Override

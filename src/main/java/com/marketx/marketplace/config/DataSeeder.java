@@ -1,20 +1,22 @@
 package com.marketx.marketplace.config;
 
-import com.marketx.marketplace.entity.ApprovalStatus;
-import com.marketx.marketplace.entity.Product;
-import com.marketx.marketplace.entity.Role;
-import com.marketx.marketplace.entity.User;
-import com.marketx.marketplace.repository.ProductRepository;
-import com.marketx.marketplace.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.math.BigDecimal;
+
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
+import com.marketx.marketplace.entity.ApprovalStatus;
+import com.marketx.marketplace.entity.Product;
+import com.marketx.marketplace.entity.Role;
+import com.marketx.marketplace.entity.User;
+import com.marketx.marketplace.repository.ProductRepository;
+import com.marketx.marketplace.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -29,11 +31,13 @@ public class DataSeeder implements ApplicationRunner {
     private static final String ADMIN_EMAIL = "albitahmid@gmail.com";
     private static final String AKASH_EMAIL = "akash@gmail.com";
     private static final String ANIK_EMAIL  = "anik@gmail.com";
+    private static final String REZA_EMAIL  = "reza@gmail.com";
     private static final String SELLER_PASS = "123456";
 
     @Override
     public void run(ApplicationArguments args) {
         seedAdmin();
+        seedBuyer("Reza", REZA_EMAIL);
         User akash = seedSeller("Akash", AKASH_EMAIL);
         User anik  = seedSeller("Anik",  ANIK_EMAIL);
         seedProducts(akash, anik);
@@ -52,6 +56,18 @@ public class DataSeeder implements ApplicationRunner {
                 .approvalStatus(ApprovalStatus.APPROVED)
                 .build());
         log.info("Seeded admin: {}", ADMIN_EMAIL);
+    }
+
+    private void seedBuyer(String name, String email) {
+        if (userRepository.existsByEmail(email)) return;
+        userRepository.save(User.builder()
+                .name(name)
+                .email(email)
+                .password(passwordEncoder.encode(SELLER_PASS))
+                .role(Role.BUYER)
+                .approvalStatus(ApprovalStatus.APPROVED)
+                .build());
+        log.info("Seeded buyer: {}", email);
     }
 
     private User seedSeller(String name, String email) {

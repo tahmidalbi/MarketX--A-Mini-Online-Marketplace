@@ -15,21 +15,84 @@
     <div class="page-header">
         <div>
             <h1>My Orders</h1>
-            <p class="page-subtitle">Orders placed on your products</p>
+            <p class="page-subtitle" th:text="${orders.size()} + ' order(s) received'"></p>
         </div>
     </div>
 
-    <div class="empty-state-full">
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+    <!-- Empty state -->
+    <div th:if="${orders.isEmpty()}" class="empty-state-full">
         <div class="empty-icon-lg">📋</div>
-        <h3>Coming soon</h3>
-        <p>Order management will be available in the next update.</p>
+        <h3>No orders yet</h3>
+        <p>Orders from buyers will appear here once they purchase your products.</p>
+    </div>
+
+    <!-- Orders Table -->
+    <div th:unless="${orders.isEmpty()}" class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Buyer</th>
+                    <th>Items (yours)</th>
+                    <th>Order Total</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Update Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="order : ${orders}">
+                    <td style="font-weight:600;color:var(--text)">#<span th:text="${order.id}"></span></td>
+                    <td>
+                        <span th:text="${order.buyer.name}"></span>
+                        <p style="font-size:.72rem;color:var(--text-muted)" th:text="${order.buyer.email}"></p>
+                    </td>
+                    <td>
+                        <div th:each="item : ${order.items}" style="margin-bottom:.25rem">
+                            <span th:text="${item.productName}" style="font-size:.8rem;color:var(--text-body)"></span>
+                            <span th:text="' ×' + ${item.quantity}" style="font-size:.75rem;color:var(--text-muted)"></span>
+                            <span th:text="' — $' + ${#numbers.formatDecimal(item.subtotal, 1, 2)}" style="font-size:.75rem;color:var(--success)"></span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="td-price" th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}"></span>
+                    </td>
+                    <td style="color:var(--text-muted);font-size:.8rem" th:text="${#temporals.format(order.createdAt, 'dd MMM yyyy')}"></td>
+                    <td>
+                        <span th:class="'badge order-status-badge ' + ${order.status.name().toLowerCase().replace('_','-')}"
+                              th:text="${order.status.name().replace('_',' ')}"></span>
+                    </td>
+                    <td>
+                        <form th:action="@{/seller/my-orders/{id}/status(id=${order.id})}" method="post" class="status-form">
+                            <select name="status" class="filter-select" style="font-size:.75rem;padding:.3rem .6rem">
+                                <option th:each="s : ${statuses}"
+                                        th:value="${s}"
+                                        th:text="${s.name().replace('_',' ')}"
+                                        th:selected="${s == order.status}"></option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm" style="margin-left:.4rem">Update</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Shipping addresses (collapsed by detail) -->
+    <div th:unless="${orders.isEmpty()}" style="margin-top:1.5rem">
+        <h2 style="font-size:.9rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Shipping Addresses</h2>
+        <div th:each="order : ${orders}" style="display:flex;gap:.75rem;align-items:flex-start;padding:.6rem 0;border-bottom:1px solid var(--border-subtle)">
+            <span style="font-weight:600;font-size:.8rem;color:var(--text-muted);min-width:80px">#<span th:text="${order.id}"></span></span>
+            <span style="font-size:.8rem;color:var(--text-body)" th:text="${order.shippingAddress}"></span>
+        </div>
     </div>
 
 </main>
 
-<footer>
-    <p>&copy; 2025 MarketX. All rights reserved.</p>
-</footer>
+<footer><p>&copy; 2025 MarketX. All rights reserved.</p></footer>
 
 </body>
 </html>

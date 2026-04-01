@@ -2,9 +2,12 @@ package com.marketx.marketplace.controller;
 
 import com.marketx.marketplace.dto.EditProductDto;
 import com.marketx.marketplace.dto.ProductDto;
+import com.marketx.marketplace.entity.Order;
+import com.marketx.marketplace.entity.OrderStatus;
 import com.marketx.marketplace.entity.Product;
 import com.marketx.marketplace.entity.User;
 import com.marketx.marketplace.security.CustomUserDetails;
+import com.marketx.marketplace.service.OrderService;
 import com.marketx.marketplace.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -22,6 +26,7 @@ import java.util.List;
 public class SellerController {
 
     private final ProductService productService;
+    private final OrderService orderService;
 
     private static final List<String> CATEGORIES = List.of(
             "Electronics", "Clothing", "Books", "Sports",
@@ -32,7 +37,7 @@ public class SellerController {
         return ((CustomUserDetails) auth.getPrincipal()).getUser();
     }
 
-    /* ── Home / Browse ────────────────────────────────────────── */
+    /* ── Dashboard ──────────────────────────────────────────────── */
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) String q,
@@ -47,7 +52,7 @@ public class SellerController {
         return "seller/dashboard";
     }
 
-    /* ── My Products ──────────────────────────────────────────── */
+    /* ── My Products ──────────────────────────────────────────────── */
 
     @GetMapping("/my-products")
     public String myProducts(Authentication auth, Model model) {
@@ -57,8 +62,6 @@ public class SellerController {
         model.addAttribute("activePage", "my-products");
         return "seller/my-products";
     }
-
-    /* ── Add Product ──────────────────────────────────────────── */
 
     @GetMapping("/products/add")
     public String showAddForm(Authentication auth, Model model) {
@@ -83,8 +86,6 @@ public class SellerController {
         productService.addProduct(productDto, currentUser(auth));
         return "redirect:/seller/my-products";
     }
-
-    /* ── Edit Product ─────────────────────────────────────────── */
 
     @GetMapping("/products/{id}/edit")
     public String showEditForm(@PathVariable Long id, Authentication auth, Model model) {
@@ -123,20 +124,52 @@ public class SellerController {
         return "redirect:/seller/my-products";
     }
 
-    /* ── Delete Product ───────────────────────────────────────── */
-
     @DeleteMapping("/products/{id}")
     public String deleteProduct(@PathVariable Long id, Authentication auth) {
         productService.deleteProduct(id, currentUser(auth));
         return "redirect:/seller/my-products";
     }
 
-    /* ── My Orders (coming soon) ──────────────────────────────── */
+    /* ── My Orders ──────────────────────────────────────────────── */
 
     @GetMapping("/my-orders")
     public String myOrders(Authentication auth, Model model) {
-        model.addAttribute("user", currentUser(auth));
+        User user = currentUser(auth);
+        List<Order> orders = orderService.getSellerOrders(user);
+        model.addAttribute("user", user);
+        model.addAttribute("orders", orders);
+        model.addAttribute("statuses", OrderStatus.values());
         model.addAttribute("activePage", "my-orders");
         return "seller/my-orders";
+    }
+
+    @PostMapping("/my-orders/{id}/status")
+    public String updateStatus(@PathVariable Long id,
+                               @RequestParam OrderStatus status,
+                               Authentication auth,
+                               RedirectAttributes ra) {
+        try {
+            orderService.updateOrderStatus(currentUser(auth), id, status);
+            ra.addFlashAttribute("successMessage", "Order #" + id + " status updated.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/seller/my-orders";
+    }
+
+    /* ── Analytics ──────────────────────────────────────────────── */
+
+    @GetMapping("/analytics")
+    public String analytics(Authentication auth, Model model) {
+        User user = currentUser(auth);
+        model.addAttribute("user", user);
+        model.addAttribute("totalRevenue", orderService.getSellerTotalRevenue(user));
+        model.addAttribute("revenueByCategory", orderService.getSellerRevenueByCategory(user));
+        model.addAttribute("unitsByCategory", orderService.getSellerUnitsByCategory(user));
+        model.addAttribute("topProducts", orderService.getSellerTopProducts(user));
+        model.addAttribute("totalProducts", productService.findBySeller(user).size());
+        model.addAttribute("totalOrders", orderService.getSellerOrders(user).size());
+        model.addAttribute("activePage", "analytics");
+        return "seller/analytics";
     }
 }
