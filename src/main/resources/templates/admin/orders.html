@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders — MarketX Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+
+    <div class="page-header">
+        <div>
+            <h1>All Orders</h1>
+            <p class="page-subtitle" th:text="${orders.size()} + ' total orders on the platform'"></p>
+        </div>
+        <span class="badge badge-seller" th:text="${orders.size()} + ' orders'"></span>
+    </div>
+
+    <!-- Empty state -->
+    <div th:if="${orders.isEmpty()}" class="empty-state-full">
+        <div class="empty-icon-lg">📋</div>
+        <h3>No orders yet</h3>
+        <p>Orders will appear here once buyers start purchasing.</p>
+    </div>
+
+    <!-- Orders Table -->
+    <div th:unless="${orders.isEmpty()}" class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Buyer</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Shipping</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="order : ${orders}">
+                    <td style="font-weight:600;color:var(--text)">#<span th:text="${order.id}"></span></td>
+                    <td>
+                        <strong th:text="${order.buyer.name}"></strong>
+                        <p style="font-size:.72rem;color:var(--text-muted)" th:text="${order.buyer.email}"></p>
+                    </td>
+                    <td>
+                        <div th:each="item : ${order.items}" style="margin-bottom:.2rem">
+                            <span style="font-size:.78rem;color:var(--text-body)" th:text="${item.productName}"></span>
+                            <span style="font-size:.73rem;color:var(--text-muted)" th:text="' ×' + ${item.quantity}"></span>
+                            <span style="font-size:.73rem;color:var(--text-muted)" th:text="' — ' + ${item.seller.name}"></span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="td-price" th:text="'$' + ${#numbers.formatDecimal(order.totalAmount, 1, 2)}"></span>
+                    </td>
+                    <td>
+                        <span th:class="'badge order-status-badge ' + ${order.status.name().toLowerCase().replace('_','-')}"
+                              th:text="${order.status.name().replace('_',' ')}"></span>
+                    </td>
+                    <td style="color:var(--text-muted);font-size:.8rem" th:text="${#temporals.format(order.createdAt, 'dd MMM yyyy')}"></td>
+                    <td style="font-size:.75rem;color:var(--text-muted);max-width:180px" th:text="${order.shippingAddress}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+<footer><p>&copy; 2025 MarketX. All rights reserved.</p></footer>
+
+</body>
+</html>

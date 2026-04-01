@@ -1,9 +1,9 @@
 package com.marketx.marketplace.service;
 
+import java.util.List;
+
 import com.marketx.marketplace.entity.Product;
 import com.marketx.marketplace.entity.User;
-
-import java.util.List;
 
 public interface AdminService {
 
@@ -20,4 +20,6 @@ public interface AdminService {
 
     List<Product> getAllProducts();
     void removeProduct(Long id);
+
+    long getPendingSellerCount();
 }

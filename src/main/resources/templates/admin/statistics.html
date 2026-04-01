@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics — MarketX Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+
+    <div class="page-header">
+        <div>
+            <h1>Platform Statistics</h1>
+            <p class="page-subtitle">Complete overview of marketplace performance</p>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="stats-grid" style="margin-bottom:2rem">
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info">
+                <p class="stat-label">Total Platform Revenue</p>
+                <h3 class="stat-value" th:text="'$' + ${#numbers.formatDecimal(totalRevenue, 1, 2)}"></h3>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-info">
+                <p class="stat-label">Total Orders</p>
+                <h3 class="stat-value" th:text="${totalOrders}"></h3>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+                <p class="stat-label">Registered Users</p>
+                <h3 class="stat-value" th:text="${totalUsers}"></h3>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-info">
+                <p class="stat-label">Pending Sellers</p>
+                <h3 class="stat-value" th:text="${pendingCount}"></h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-grid">
+
+        <!-- Revenue per Seller (Bar) -->
+        <div class="card chart-card">
+            <h2>Revenue per Seller</h2>
+            <p class="page-subtitle" style="margin-bottom:1.25rem">Total earnings by each seller</p>
+            <div th:if="${revenuePerSeller.isEmpty()}" class="empty-state">
+                <p>No sales data yet.</p>
+            </div>
+            <div th:unless="${revenuePerSeller.isEmpty()}" class="chart-container">
+                <canvas id="sellerRevenueChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Revenue by Category (Doughnut) -->
+        <div class="card chart-card">
+            <h2>Revenue by Category</h2>
+            <p class="page-subtitle" style="margin-bottom:1.25rem">Platform-wide category performance</p>
+            <div th:if="${globalRevenueByCategory.isEmpty()}" class="empty-state">
+                <p>No sales data yet.</p>
+            </div>
+            <div th:unless="${globalRevenueByCategory.isEmpty()}" class="chart-container">
+                <canvas id="categoryRevenueChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Seller Revenue Table -->
+    <div class="card" style="margin-top:1.5rem">
+        <h2 style="margin-bottom:1.25rem">Seller Revenue Breakdown</h2>
+        <div th:if="${revenuePerSeller.isEmpty()}" class="empty-state">
+            <p>No seller revenue data yet.</p>
+        </div>
+        <div th:unless="${revenuePerSeller.isEmpty()}" class="table-wrapper" style="border:none">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Seller</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="row, stat : ${revenuePerSeller}">
+                        <td th:text="${stat.count}" style="color:var(--text-muted)"></td>
+                        <td>
+                            <strong th:text="${row[0].name}"></strong>
+                        </td>
+                        <td style="color:var(--text-muted);font-size:.8rem" th:text="${row[0].email}"></td>
+                        <td>
+                            <span th:if="${row[0].approvalStatus.name() == 'APPROVED'}" class="badge badge-approved">Active</span>
+                            <span th:if="${row[0].approvalStatus.name() == 'PENDING'}" class="badge badge-pending">Pending</span>
+                            <span th:if="${row[0].approvalStatus.name() == 'REJECTED'}" class="badge badge-rejected">Disabled</span>
+                        </td>
+                        <td>
+                            <span class="td-price" th:text="'$' + ${#numbers.formatDecimal(row[1], 1, 2)}"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Category Revenue Table -->
+    <div class="card" style="margin-top:1.5rem">
+        <h2 style="margin-bottom:1.25rem">Category Revenue Breakdown</h2>
+        <div th:if="${globalRevenueByCategory.isEmpty()}" class="empty-state">
+            <p>No category data yet.</p>
+        </div>
+        <div th:unless="${globalRevenueByCategory.isEmpty()}" class="table-wrapper" style="border:none">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="entry : ${globalRevenueByCategory}">
+                        <td><span class="badge badge-category" th:text="${entry.key}"></span></td>
+                        <td><span class="td-price" th:text="'$' + ${#numbers.formatDecimal(entry.value, 1, 2)}"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<footer><p>&copy; 2025 MarketX. All rights reserved.</p></footer>
+
+<script th:inline="javascript">
+    const revenuePerSeller = /*[[${revenuePerSeller}]]*/ [];
+    const globalRevByCategory = /*[[${globalRevenueByCategory}]]*/ {};
+
+    const PALETTE = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6','#ef4444','#14b8a6','#f97316','#84cc16'];
+
+    // Seller Revenue Bar Chart
+    if (revenuePerSeller.length > 0) {
+        const sellerLabels = revenuePerSeller.map(r => r[0].name);
+        const sellerData = revenuePerSeller.map(r => parseFloat(r[1]));
+
+        new Chart(document.getElementById('sellerRevenueChart'), {
+            type: 'bar',
+            data: {
+                labels: sellerLabels,
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: sellerData,
+                    backgroundColor: PALETTE.slice(0, sellerLabels.length),
+                    borderRadius: 6,
+                    borderColor: 'transparent'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,.05)' } },
+                    y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,.05)' } }
+                }
+            }
+        });
+    }
+
+    // Category Doughnut Chart
+    if (Object.keys(globalRevByCategory).length > 0) {
+        new Chart(document.getElementById('categoryRevenueChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(globalRevByCategory),
+                datasets: [{
+                    data: Object.values(globalRevByCategory).map(Number),
+                    backgroundColor: PALETTE.slice(0, Object.keys(globalRevByCategory).length),
+                    borderColor: 'transparent'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', font: { size: 11 }, padding: 14 }
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -87,10 +87,18 @@
                         Already have an account? <a th:href="@{/auth/login}">Sign in</a>
                     </p>
                 </div>
-                <div sec:authorize="isAuthenticated()">
-                    <button class="btn btn-primary btn-full" disabled style="opacity:.5; cursor:not-allowed">
-                        Add to Cart — Coming Soon
-                    </button>
+                <div sec:authorize="hasRole('BUYER')">
+                    <form th:action="@{/buyer/cart/add}" method="post">
+                        <input type="hidden" name="productId" th:value="${product.id}"/>
+                        <input type="hidden" name="quantity" value="1"/>
+                        <button type="submit" class="btn btn-primary btn-full"
+                                th:disabled="${product.quantity == 0}">
+                            <span th:text="${product.quantity > 0} ? 'Add to Cart' : 'Out of Stock'">Add to Cart</span>
+                        </button>
+                    </form>
+                </div>
+                <div sec:authorize="isAuthenticated() and !hasRole('BUYER')">
+                    <p style="color:var(--text-muted);font-size:.9rem;">Only buyers can purchase products.</p>
                 </div>
             </div>
 
