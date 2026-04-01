@@ -2,6 +2,7 @@ package com.marketx.marketplace.controller;
 
 import com.marketx.marketplace.dto.CheckoutDto;
 import com.marketx.marketplace.dto.ProfileUpdateDto;
+import com.marketx.marketplace.dto.ReviewDto;
 import com.marketx.marketplace.entity.CartItem;
 import com.marketx.marketplace.entity.Order;
 import com.marketx.marketplace.entity.User;
@@ -11,6 +12,7 @@ import com.marketx.marketplace.security.CustomUserDetails;
 import com.marketx.marketplace.service.CartService;
 import com.marketx.marketplace.service.OrderService;
 import com.marketx.marketplace.service.ProductService;
+import com.marketx.marketplace.service.ReviewService;
 import com.marketx.marketplace.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class BuyerController {
     private final UserService userService;
     private final CartService cartService;
     private final OrderService orderService;
+    private final ReviewService reviewService;
 
     private static final List<String> CATEGORIES = List.of(
             "Electronics", "Clothing", "Books", "Sports",
@@ -232,5 +235,26 @@ public class BuyerController {
         } catch (ResourceNotFoundException | SecurityException e) {
             return "redirect:/buyer/my-orders";
         }
+    }
+
+    /* ── Reviews ────────────────────────────────────────────────── */
+
+    @PostMapping("/review/{productId}")
+    public String submitReview(@PathVariable Long productId,
+                               @Valid @ModelAttribute("reviewDto") ReviewDto dto,
+                               BindingResult result,
+                               Authentication auth,
+                               RedirectAttributes ra) {
+        if (result.hasErrors()) {
+            result.getAllErrors().forEach(e -> ra.addFlashAttribute("reviewError", e.getDefaultMessage()));
+            return "redirect:/products/" + productId;
+        }
+        try {
+            reviewService.submitReview(currentUser(auth), productId, dto);
+            ra.addFlashAttribute("reviewSuccess", "Your review was saved!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("reviewError", e.getMessage());
+        }
+        return "redirect:/products/" + productId;
     }
 }
