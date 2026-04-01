@@ -1,9 +1,5 @@
 package com.marketx.marketplace.config;
 
-import com.marketx.marketplace.security.CustomAuthFailureHandler;
-import com.marketx.marketplace.security.CustomAuthSuccessHandler;
-import com.marketx.marketplace.security.CustomUserDetailsService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,6 +9,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import com.marketx.marketplace.security.CustomAuthFailureHandler;
+import com.marketx.marketplace.security.CustomAuthSuccessHandler;
+import com.marketx.marketplace.security.CustomUserDetailsService;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
