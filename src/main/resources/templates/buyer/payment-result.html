@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Result – MarketX</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main>
+    <div class="card card-sm" style="margin-top: 5rem; text-align: center;">
+
+        <!-- SUCCESS -->
+        <div th:if="${successMessage}">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+            <h1 style="color: #86efac; margin-bottom: 1rem;">Payment Successful!</h1>
+            <p class="alert alert-success" th:text="${successMessage}"></p>
+            <!-- Link to My Orders — buyer must log in if session expired,
+                 but the order is already saved in the DB -->
+            <a th:href="@{/buyer/my-orders}" class="btn btn-primary btn-full">View My Orders</a>
+        </div>
+
+        <!-- FAILURE / CANCEL -->
+        <div th:if="${errorMessage}">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+            <h1 style="color: #fca5a5; margin-bottom: 1rem;">Payment Unsuccessful</h1>
+            <p class="alert alert-error" th:text="${errorMessage}"></p>
+            <div style="display: flex; gap: .75rem; justify-content: center; margin-top: 1.5rem;">
+                <a th:href="@{/buyer/cart}" class="btn btn-primary">Back to Cart</a>
+                <a th:href="@{/buyer/my-orders}" class="btn btn-secondary">My Orders</a>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+</body>
+</html>

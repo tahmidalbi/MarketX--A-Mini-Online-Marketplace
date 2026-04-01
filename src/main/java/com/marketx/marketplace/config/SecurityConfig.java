@@ -28,6 +28,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // SSLCommerz POSTs to these from their own servers — no CSRF token possible
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers(
                     "/buyer/payment/success",
@@ -43,7 +44,14 @@ public class SecurityConfig {
                     "/auth/**",
                     "/css/**",
                     "/js/**",
-                    "/images/**"
+                    "/images/**",
+                    // ── FIX: SSLCommerz server-to-server POSTs carry no session cookie.
+                    // Spring Security must not require authentication for these URLs,
+                    // otherwise unauthenticated SSLCommerz server POSTs are redirected
+                    // to the login page and the order is never confirmed.
+                    "/buyer/payment/success",
+                    "/buyer/payment/fail",
+                    "/buyer/payment/cancel"
                 ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/seller/**").hasRole("SELLER")
