@@ -105,6 +105,73 @@
         </div>
     </div>
 
+    <!-- ── Reviews Section ──────────────────────────────────────── -->
+    <div class="reviews-section">
+
+        <!-- Summary bar -->
+        <div class="reviews-header">
+            <h2 class="reviews-title">Customer Reviews</h2>
+            <div class="reviews-summary" th:if="${reviewCount > 0}">
+                <div class="reviews-avg-stars">
+                    <span th:each="i : ${#numbers.sequence(1, 5)}"
+                          th:with="isFull=${i <= avgStarsFloor}, isHalf=${i == (avgStarsFloor + 1) and avgHalfStar}"
+                          th:class="${isFull ? 'star star-filled' : (isHalf ? 'star star-half' : 'star star-empty')}">&#9733;</span>
+                </div>
+                <span class="reviews-avg-score" th:text="${avgStars}">0</span>
+                <span class="reviews-count" th:text="'(' + ${reviewCount} + ' review' + (${reviewCount} != 1 ? 's' : '') + ')'"></span>
+            </div>
+            <p class="reviews-none" th:if="${reviewCount == 0}">No reviews yet. Be the first!</p>
+        </div>
+
+        <!-- Write a review (BUYER only) -->
+        <div sec:authorize="hasRole('BUYER')" class="review-form-card">
+            <h3 class="review-form-title"
+                th:text="${existingReview != null} ? 'Update Your Review' : 'Write a Review'">Write a Review</h3>
+
+            <!-- flash messages -->
+            <div class="alert alert-success" th:if="${reviewSuccess}" th:text="${reviewSuccess}"></div>
+            <div class="alert alert-error"   th:if="${reviewError}"   th:text="${reviewError}"></div>
+
+            <form th:action="@{'/buyer/review/' + ${product.id}}" method="post" class="review-form">
+                <!-- Star picker -->
+                <div class="star-picker" id="starPicker">
+                    <label class="star-label" th:each="i : ${#numbers.sequence(5, 1, -1)}">
+                        <input type="radio" name="stars" th:value="${i}"
+                               th:checked="${existingReview != null and existingReview.stars == i}"/>
+                        <span class="star-icon">&#9733;</span>
+                    </label>
+                </div>
+
+                <!-- Comment -->
+                <textarea name="comment" class="review-textarea" rows="3"
+                          placeholder="Share your experience with this product..."
+                          th:text="${existingReview != null} ? ${existingReview.comment} : ''"></textarea>
+
+                <button type="submit" class="btn btn-primary"
+                        th:text="${existingReview != null} ? 'Update Review' : 'Submit Review'">Submit Review</button>
+            </form>
+        </div>
+
+        <!-- Review list -->
+        <div class="review-list" th:if="${not #lists.isEmpty(reviews)}">
+            <div class="review-card" th:each="review : ${reviews}">
+                <div class="review-card-header">
+                    <div class="review-card-stars">
+                        <span th:each="i : ${#numbers.sequence(1, 5)}"
+                              th:class="${i <= review.stars} ? 'star star-filled' : 'star star-empty'">&#9733;</span>
+                    </div>
+                    <div class="review-card-meta">
+                        <span class="review-author" th:text="${review.buyer.name}">Buyer</span>
+                        <span class="review-date"
+                              th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy')}">Date</span>
+                    </div>
+                </div>
+                <p class="review-comment" th:text="${review.comment}"></p>
+            </div>
+        </div>
+
+    </div>
+
 </main>
 
 <footer>
