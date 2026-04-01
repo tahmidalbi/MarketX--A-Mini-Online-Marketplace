@@ -1663,6 +1663,232 @@ a.product-card:hover { text-decoration: none; color: inherit; }
 
 .checkout-item-row:last-child { border-bottom: none; }
 
+/* ── Reviews ─────────────────────────────────────────────────────── */
+.reviews-section {
+    max-width: 860px;
+    margin: 2.5rem auto 0;
+    padding: 0 1rem 3rem;
+}
+
+.reviews-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.reviews-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+    letter-spacing: -.01em;
+}
+
+.reviews-summary {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.reviews-avg-score {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.reviews-count {
+    font-size: .875rem;
+    color: var(--text-muted);
+}
+
+.reviews-none {
+    font-size: .875rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* ── Stars (display) ─────────────────────────────────── */
+.star {
+    font-size: 1.15rem;
+    line-height: 1;
+    display: inline-block;
+}
+
+.star-filled { color: var(--warning); }
+.star-empty  { color: var(--border-strong); }
+
+/* Half star: base char = empty colour, ::before clips left 50% in gold */
+.star-half {
+    position: relative;
+    color: var(--border-strong);
+    display: inline-block;
+}
+.star-half::before {
+    content: '\2605'; /* ★ */
+    color: var(--warning);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+/* ── Write-a-review card ─────────────────────────────── */
+.review-form-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.review-form-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 1.1rem;
+    letter-spacing: -.01em;
+}
+
+.review-form {
+    display: flex;
+    flex-direction: column;
+    gap: .9rem;
+}
+
+/* CSS-only star picker (RTL trick so hover cascades left) */
+.star-picker {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: .15rem;
+}
+
+.star-picker input[type="radio"] {
+    display: none;
+}
+
+.star-icon {
+    font-size: 1.9rem;
+    color: var(--border-strong);
+    cursor: pointer;
+    transition: color .12s;
+    user-select: none;
+}
+
+.star-picker label:hover .star-icon,
+.star-picker label:hover ~ label .star-icon {
+    color: var(--warning);
+}
+
+.star-picker label:has(input:checked) .star-icon,
+.star-picker label:has(input:checked) ~ label .star-icon {
+    color: var(--warning);
+}
+
+.review-textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: .65rem .85rem;
+    font-size: .95rem;
+    font-family: inherit;
+    color: var(--text-body);
+    background: var(--surface-3);
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.review-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.review-textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* ── Review cards ────────────────────────────────────── */
+.review-list {
+    display: flex;
+    flex-direction: column;
+    gap: .85rem;
+}
+
+.review-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 1.1rem 1.35rem;
+    transition: border-color .15s;
+}
+
+.review-card:hover {
+    border-color: var(--border-strong);
+}
+
+.review-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .6rem;
+    margin-bottom: .6rem;
+}
+
+.review-card-stars { display: flex; gap: .05rem; }
+
+.review-card-meta {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.review-author {
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.review-date {
+    font-size: .775rem;
+    color: var(--text-muted);
+}
+
+.review-comment {
+    font-size: .925rem;
+    color: var(--text-body);
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ── Alert helpers (review flash messages) ───────────── */
+.alert {
+    padding: .65rem 1rem;
+    border-radius: var(--radius);
+    font-size: .875rem;
+    margin-bottom: .6rem;
+    font-weight: 500;
+}
+.alert-success {
+    background: var(--success-dim);
+    color: var(--success);
+    border: 1px solid var(--success-border);
+}
+.alert-error {
+    background: var(--danger-dim);
+    color: var(--danger);
+    border: 1px solid var(--danger-border);
+}
+
 .checkout-item-info {
     display: flex;
     align-items: center;
