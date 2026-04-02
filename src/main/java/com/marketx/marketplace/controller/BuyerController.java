@@ -259,8 +259,7 @@ public class BuyerController {
     }
 
     @PostMapping("/payment")
-    public String initiatePayment(Authentication auth, HttpSession session,
-                                  HttpServletRequest request, RedirectAttributes ra) {
+    public String initiatePayment(Authentication auth, HttpSession session, RedirectAttributes ra) {
         User user = currentUser(auth);
         List<CartItem> items = cartService.getCartItems(user);
         if (items.isEmpty()) return "redirect:/buyer/cart";
@@ -285,24 +284,9 @@ public class BuyerController {
         postData.put("total_amount", total.toPlainString());
         postData.put("currency", "BDT");
         postData.put("tran_id", tranId);
-        // Derive the callback base URL from the live request so it always
-        // matches the actual host — works on localhost AND on Render without
-        // any environment variable being set.
-        String proto = request.getHeader("X-Forwarded-Proto");
-        if (proto == null || proto.isBlank()) proto = request.getScheme();
-        String host = request.getHeader("X-Forwarded-Host");
-        if (host == null || host.isBlank()) host = request.getHeader("Host");
-        if (host == null || host.isBlank()) {
-            int port = request.getServerPort();
-            host = request.getServerName() +
-                   (port == 80 || port == 443 ? "" : ":" + port);
-        }
-        String dynamicBaseUrl = proto + "://" + host;
-        log.info("SSLCommerz callback base URL resolved to: {}", dynamicBaseUrl);
-
-        postData.put("success_url", dynamicBaseUrl + "/buyer/payment/success");
-        postData.put("fail_url",    dynamicBaseUrl + "/buyer/payment/fail");
-        postData.put("cancel_url",  dynamicBaseUrl + "/buyer/payment/cancel");
+        postData.put("success_url", baseUrl + "/buyer/payment/success");
+        postData.put("fail_url",    baseUrl + "/buyer/payment/fail");
+        postData.put("cancel_url",  baseUrl + "/buyer/payment/cancel");
         postData.put("version",     "3.00");
         postData.put("cus_name",    user.getName());
         postData.put("cus_email",   user.getEmail());
