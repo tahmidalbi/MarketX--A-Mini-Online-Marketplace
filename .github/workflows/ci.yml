@@ -31,3 +31,7 @@ jobs:
 
       - name: Build, Test and Package
         run: mvn -B clean verify
+
+      - name: Trigger Render Deployment
+        if: github.ref == 'refs/heads/main' && success()
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
