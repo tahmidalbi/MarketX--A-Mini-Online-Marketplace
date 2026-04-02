@@ -33,7 +33,7 @@ server:
   port: ${PORT:8080}
 
 app:
-  base-url: ${APP_BASE_URL:http://localhost:8081}
+  base-url: ${APP_BASE_URL:https://marketx-a-mini-online-marketplace.onrender.com}
 
 sslcommerz:
   store-id: ${SSLCOMMERZ_STORE_ID:marke69ca7215b4079}
