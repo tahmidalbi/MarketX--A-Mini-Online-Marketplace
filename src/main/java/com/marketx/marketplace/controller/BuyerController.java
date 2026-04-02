@@ -259,7 +259,8 @@ public class BuyerController {
     }
 
     @PostMapping("/payment")
-    public String initiatePayment(Authentication auth, HttpSession session, RedirectAttributes ra) {
+    public String initiatePayment(Authentication auth, HttpSession session,
+                                  HttpServletRequest request, RedirectAttributes ra) {
         User user = currentUser(auth);
         List<CartItem> items = cartService.getCartItems(user);
         if (items.isEmpty()) return "redirect:/buyer/cart";
@@ -284,9 +285,24 @@ public class BuyerController {
         postData.put("total_amount", total.toPlainString());
         postData.put("currency", "BDT");
         postData.put("tran_id", tranId);
-        postData.put("success_url", baseUrl + "/buyer/payment/success");
-        postData.put("fail_url",    baseUrl + "/buyer/payment/fail");
-        postData.put("cancel_url",  baseUrl + "/buyer/payment/cancel");
+        // Derive the callback base URL from the live request so it always
+        // matches the actual host — works on localhost AND on Render without
+        // any environment variable being set.
+        String proto = request.getHeader("X-Forwarded-Proto");
+        if (proto == null || proto.isBlank()) proto = request.getScheme();
+        String host = request.getHeader("X-Forwarded-Host");
+        if (host == null || host.isBlank()) host = request.getHeader("Host");
+        if (host == null || host.isBlank()) {
+            int port = request.getServerPort();
+            host = request.getServerName() +
+                   (port == 80 || port == 443 ? "" : ":" + port);
+        }
+        String dynamicBaseUrl = proto + "://" + host;
+        log.info("SSLCommerz callback base URL resolved to: {}", dynamicBaseUrl);
+
+        postData.put("success_url", dynamicBaseUrl + "/buyer/payment/success");
+        postData.put("fail_url",    dynamicBaseUrl + "/buyer/payment/fail");
+        postData.put("cancel_url",  dynamicBaseUrl + "/buyer/payment/cancel");
         postData.put("version",     "3.00");
         postData.put("cus_name",    user.getName());
         postData.put("cus_email",   user.getEmail());
@@ -373,9 +389,28 @@ public class BuyerController {
             boolean valid = sslcz.orderValidate(tranId, amount, "BDT", params);
 
             if (valid) {
-                // Retrieve shipping address stored when payment was initiated.
-                // The session may not be available here (server-to-server POST),
-                // so fall back to the address in the SSLCommerz POST params.
+                // ── Double-call guard ────────────────────────────────────────
+                // SSLCommerz POSTs success_url TWICE: once as a server-to-server
+                // IPN (no browser) and once as a browser redirect. The IPN arrives
+                // first, places the order, and clears the cart. When the browser
+                // redirect hits this same endpoint the cart is already empty.
+                // Detect this and return the already-placed order instead of
+                // attempting a second checkout (which would throw "Cart is empty").
+                List<CartItem> cartItems = cartService.getCartItems(user);
+                if (cartItems.isEmpty()) {
+                    log.info("Cart already empty for userId={} on success callback — order was placed by IPN call. tran_id={}", userId, tranId);
+                    List<Order> recentOrders = orderService.getBuyerOrders(user);
+                    if (!recentOrders.isEmpty()) {
+                        Order existing = recentOrders.get(0);
+                        model.addAttribute("successMessage",
+                                "Payment successful! Order #" + existing.getId() + " has been placed.");
+                        model.addAttribute("orderId", existing.getId());
+                    } else {
+                        model.addAttribute("successMessage", "Payment successful! Your order has been placed.");
+                    }
+                    return "buyer/payment-result";
+                }
+                // ── Normal path: first call, cart still has items ────────────
                 String shippingAddress = params.getOrDefault("cus_add1", "");
 
                 CheckoutDto checkoutDto = new CheckoutDto();
