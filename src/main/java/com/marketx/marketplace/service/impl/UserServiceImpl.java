@@ -94,4 +94,12 @@ public class UserServiceImpl implements UserService {
         user.setEmail(dto.getEmail());
         userRepository.save(user);
     }
+
+    // Used by SSLCommerz paymentSuccess callback to look up buyer by ID
+    // without requiring an active HTTP session.
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
 }

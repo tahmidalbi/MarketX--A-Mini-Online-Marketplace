@@ -18,4 +18,8 @@ public interface UserService {
     boolean existsByEmail(String email);
 
     void updateProfile(Long userId, ProfileUpdateDto dto);
+
+    // Added for SSLCommerz success callback — looks up buyer by DB id
+    // without requiring an authenticated session.
+    Optional<User> findById(Long id);
 }

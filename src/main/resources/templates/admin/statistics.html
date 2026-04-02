@@ -148,23 +148,21 @@
 <footer><p>&copy; 2025 MarketX. All rights reserved.</p></footer>
 
 <script th:inline="javascript">
-    const revenuePerSeller = /*[[${revenuePerSeller}]]*/ [];
+    const sellerLabels   = /*[[${sellerChartLabels}]]*/ [];
+    const sellerRevenues = /*[[${sellerChartRevenues}]]*/ [];
     const globalRevByCategory = /*[[${globalRevenueByCategory}]]*/ {};
 
     const PALETTE = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6','#ef4444','#14b8a6','#f97316','#84cc16'];
 
     // Seller Revenue Bar Chart
-    if (revenuePerSeller.length > 0) {
-        const sellerLabels = revenuePerSeller.map(r => r[0].name);
-        const sellerData = revenuePerSeller.map(r => parseFloat(r[1]));
-
+    if (sellerLabels.length > 0) {
         new Chart(document.getElementById('sellerRevenueChart'), {
             type: 'bar',
             data: {
                 labels: sellerLabels,
                 datasets: [{
                     label: 'Revenue ($)',
-                    data: sellerData,
+                    data: sellerRevenues.map(v => parseFloat(v)),
                     backgroundColor: PALETTE.slice(0, sellerLabels.length),
                     borderRadius: 6,
                     borderColor: 'transparent'
