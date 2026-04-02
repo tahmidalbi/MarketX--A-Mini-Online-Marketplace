@@ -32,6 +32,10 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      APP_BASE_URL: http://localhost:8081
+      SSLCOMMERZ_STORE_ID: marke69ca7215b4079
+      SSLCOMMERZ_STORE_PASSWORD: marke69ca7215b4079@ssl
+      SSLCOMMERZ_SANDBOX: "true"
     ports:
       - "8081:8080"
 

@@ -31,3 +31,11 @@ spring:
 
 server:
   port: ${PORT:8080}
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8081}
+
+sslcommerz:
+  store-id: ${SSLCOMMERZ_STORE_ID:marke69ca7215b4079}
+  store-password: ${SSLCOMMERZ_STORE_PASSWORD:marke69ca7215b4079@ssl}
+  sandbox: ${SSLCOMMERZ_SANDBOX:true}

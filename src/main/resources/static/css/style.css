@@ -2134,3 +2134,165 @@ a.product-card:hover { text-decoration: none; color: inherit; }
     color: #a5b4fc;
     border-color: rgba(99,102,241,.25);
 }
+
+/* ── Payment page ────────────────────────────────────────────── */
+.payment-steps {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-bottom: .5rem;
+}
+
+.payment-steps .step {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    font-weight: 500;
+}
+
+.payment-steps .step-done {
+    background: var(--success-dim);
+    color: var(--success);
+    border: 1px solid var(--success-border);
+}
+
+.payment-steps .step-active {
+    background: var(--accent);
+    color: #fff;
+}
+
+.payment-steps .step-arrow {
+    color: var(--border-strong);
+}
+
+/* Credit card widget */
+.payment-card-widget {
+    background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 100%);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    color: #fff;
+    min-height: 158px;
+    position: relative;
+    box-shadow: 0 6px 24px rgba(29, 78, 216, .4);
+}
+
+.payment-card-chip {
+    width: 34px;
+    height: 24px;
+    background: linear-gradient(135deg, #f5d76e, #d4a017);
+    border-radius: 4px;
+    margin-bottom: 1.25rem;
+}
+
+.payment-card-number {
+    font-size: .95rem;
+    letter-spacing: .2em;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 1.25rem;
+    opacity: .85;
+}
+
+.payment-card-bottom {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+}
+
+.payment-card-label {
+    font-size: .58rem;
+    opacity: .6;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: .15rem;
+}
+
+.payment-card-value {
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+}
+
+/* ── Payment page ───────────────────────────────────────────── */
+.payment-steps {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-bottom: .5rem;
+}
+
+.payment-steps .step {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    font-weight: 500;
+}
+
+.payment-steps .step-done {
+    background: var(--success-dim);
+    color: var(--success);
+    border: 1px solid var(--success-border);
+}
+
+.payment-steps .step-active {
+    background: var(--accent);
+    color: #fff;
+}
+
+.payment-steps .step-arrow {
+    color: var(--border-strong);
+}
+
+/* Credit card widget */
+.payment-card-widget {
+    background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 100%);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    color: #fff;
+    min-height: 158px;
+    position: relative;
+    box-shadow: 0 6px 24px rgba(29, 78, 216, .4);
+}
+
+.payment-card-chip {
+    width: 34px;
+    height: 24px;
+    background: linear-gradient(135deg, #f5d76e, #d4a017);
+    border-radius: 4px;
+    margin-bottom: 1.25rem;
+}
+
+.payment-card-number {
+    font-size: .95rem;
+    letter-spacing: .2em;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 1.25rem;
+    opacity: .85;
+}
+
+.payment-card-bottom {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+}
+
+.payment-card-label {
+    font-size: .58rem;
+    opacity: .6;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: .15rem;
+}
+
+.payment-card-value {
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+}

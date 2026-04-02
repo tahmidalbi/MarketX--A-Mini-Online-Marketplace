@@ -1,6 +1,9 @@
 package com.marketx.marketplace.controller;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -141,9 +144,23 @@ public class AdminController {
 
     @GetMapping("/statistics")
     public String statistics(Model model) {
+        List<Object[]> revenuePerSeller = orderService.getRevenuePerSeller();
+        Map<String, BigDecimal> globalRevenueByCategory = orderService.getGlobalRevenueByCategory();
+
+        // Chart-ready simple lists (avoids Thymeleaf JS-inline serializing JPA entities)
+        List<String> sellerLabels = new ArrayList<>();
+        List<BigDecimal> sellerRevenues = new ArrayList<>();
+        for (Object[] row : revenuePerSeller) {
+            User seller = (User) row[0];
+            sellerLabels.add(seller.getName());
+            sellerRevenues.add((BigDecimal) row[1]);
+        }
+
         model.addAttribute("totalRevenue", orderService.getTotalPlatformRevenue());
-        model.addAttribute("revenuePerSeller", orderService.getRevenuePerSeller());
-        model.addAttribute("globalRevenueByCategory", orderService.getGlobalRevenueByCategory());
+        model.addAttribute("revenuePerSeller", revenuePerSeller);
+        model.addAttribute("globalRevenueByCategory", globalRevenueByCategory);
+        model.addAttribute("sellerChartLabels", sellerLabels);
+        model.addAttribute("sellerChartRevenues", sellerRevenues);
         model.addAttribute("totalOrders", orderService.getAllOrders().size());
         model.addAttribute("totalUsers", adminService.getAllUsers().size());
         model.addAttribute("pendingCount", adminService.getPendingSellerCount());
