@@ -1,5 +1,23 @@
 package com.marketx.marketplace.controller;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.marketx.marketplace.dto.CheckoutDto;
 import com.marketx.marketplace.dto.ProfileUpdateDto;
 import com.marketx.marketplace.dto.ReviewDto;
@@ -8,28 +26,35 @@ import com.marketx.marketplace.entity.Order;
 import com.marketx.marketplace.entity.User;
 import com.marketx.marketplace.exception.ResourceNotFoundException;
 import com.marketx.marketplace.exception.UserAlreadyExistsException;
+import com.marketx.marketplace.payment.SSLCommerz;
 import com.marketx.marketplace.security.CustomUserDetails;
 import com.marketx.marketplace.service.CartService;
 import com.marketx.marketplace.service.OrderService;
 import com.marketx.marketplace.service.ProductService;
 import com.marketx.marketplace.service.ReviewService;
 import com.marketx.marketplace.service.UserService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Controller
 @RequestMapping("/buyer")
 @RequiredArgsConstructor
 public class BuyerController {
+
+    @Value("${app.base-url:http://localhost:8081}")
+    private String baseUrl;
+
+    @Value("${sslcommerz.store-id}")
+    private String sslStoreId;
+
+    @Value("${sslcommerz.store-password}")
+    private String sslStorePassword;
+
+    @Value("${sslcommerz.sandbox:true}")
+    private boolean sslSandbox;
 
     private final ProductService productService;
     private final UserService userService;
@@ -182,11 +207,12 @@ public class BuyerController {
     }
 
     @PostMapping("/checkout")
-    public String placeOrder(@Valid @ModelAttribute CheckoutDto checkoutDto,
-                             BindingResult result,
-                             Authentication auth,
-                             Model model,
-                             RedirectAttributes ra) {
+    public String submitCheckout(@Valid @ModelAttribute CheckoutDto checkoutDto,
+                                 BindingResult result,
+                                 Authentication auth,
+                                 Model model,
+                                 HttpSession session,
+                                 RedirectAttributes ra) {
         User user = currentUser(auth);
         if (result.hasErrors()) {
             List<CartItem> items = cartService.getCartItems(user);
@@ -200,14 +226,131 @@ public class BuyerController {
             model.addAttribute("activePage", "cart");
             return "buyer/checkout";
         }
+        session.setAttribute("sslShippingAddress", checkoutDto.getShippingAddress());
+        return "redirect:/buyer/payment";
+    }
+
+    /* ── Payment ────────────────────────────────────────────────── */
+
+    @GetMapping("/payment")
+    public String showPayment(Authentication auth, HttpSession session, Model model) {
+        User user = currentUser(auth);
+        List<CartItem> items = cartService.getCartItems(user);
+        if (items.isEmpty()) return "redirect:/buyer/cart";
+
+        String shippingAddress = (String) session.getAttribute("sslShippingAddress");
+        if (shippingAddress == null || shippingAddress.isBlank()) {
+            return "redirect:/buyer/checkout";
+        }
+
+        BigDecimal total = items.stream()
+                .map(i -> i.getProduct().getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        model.addAttribute("user", user);
+        model.addAttribute("cartItems", items);
+        model.addAttribute("cartTotal", total);
+        model.addAttribute("shippingAddress", shippingAddress);
+        model.addAttribute("activePage", "cart");
+        model.addAttribute("cartCount", items.size());
+        return "buyer/payment";
+    }
+
+    @PostMapping("/payment")
+    public String initiatePayment(Authentication auth, HttpSession session, RedirectAttributes ra) {
+        User user = currentUser(auth);
+        List<CartItem> items = cartService.getCartItems(user);
+        if (items.isEmpty()) return "redirect:/buyer/cart";
+
+        String shippingAddress = (String) session.getAttribute("sslShippingAddress");
+        if (shippingAddress == null || shippingAddress.isBlank()) {
+            return "redirect:/buyer/checkout";
+        }
+
+        BigDecimal total = items.stream()
+                .map(i -> i.getProduct().getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        String tranId = "MKT_" + user.getId() + "_" + System.currentTimeMillis();
+
+        Map<String, String> postData = new HashMap<>();
+        postData.put("total_amount", total.toPlainString());
+        postData.put("currency", "BDT");
+        postData.put("tran_id", tranId);
+        postData.put("success_url", baseUrl + "/buyer/payment/success");
+        postData.put("fail_url",    baseUrl + "/buyer/payment/fail");
+        postData.put("cancel_url",  baseUrl + "/buyer/payment/cancel");
+        postData.put("version",     "3.00");
+        postData.put("cus_name",    user.getName());
+        postData.put("cus_email",   user.getEmail());
+        postData.put("cus_add1",    shippingAddress);
+        postData.put("cus_city",    "Dhaka");
+        postData.put("cus_state",   "Dhaka");
+        postData.put("cus_postcode","1000");
+        postData.put("cus_country", "Bangladesh");
+        postData.put("cus_phone",   "01700000000");
+
         try {
-            Order order = orderService.checkout(user, checkoutDto);
-            ra.addFlashAttribute("successMessage", "Order #" + order.getId() + " placed successfully!");
-            return "redirect:/buyer/my-orders";
-        } catch (IllegalStateException e) {
-            ra.addFlashAttribute("errorMessage", e.getMessage());
+            SSLCommerz sslcz = new SSLCommerz(sslStoreId, sslStorePassword, sslSandbox);
+            String gatewayUrl = sslcz.initiateTransaction(postData, false);
+            session.setAttribute("sslTranId", tranId);
+            session.setAttribute("sslAmount", total.toPlainString());
+            return "redirect:" + gatewayUrl;
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Payment gateway error: " + e.getMessage());
+            return "redirect:/buyer/payment";
+        }
+    }
+
+    @PostMapping("/payment/success")
+    public String paymentSuccess(HttpServletRequest request, Authentication auth,
+                                 HttpSession session, RedirectAttributes ra) {
+        String tranId       = (String) session.getAttribute("sslTranId");
+        String amount       = (String) session.getAttribute("sslAmount");
+        String shippingAddr = (String) session.getAttribute("sslShippingAddress");
+
+        if (tranId == null || amount == null) {
+            ra.addFlashAttribute("errorMessage", "Payment session expired. Please try again.");
             return "redirect:/buyer/cart";
         }
+
+        Map<String, String> params = new HashMap<>();
+        request.getParameterMap().forEach((k, v) -> params.put(k, v[0]));
+
+        try {
+            SSLCommerz sslcz = new SSLCommerz(sslStoreId, sslStorePassword, sslSandbox);
+            boolean valid = sslcz.orderValidate(tranId, amount, "BDT", params);
+            if (valid) {
+                User user = currentUser(auth);
+                CheckoutDto checkoutDto = new CheckoutDto();
+                checkoutDto.setShippingAddress(shippingAddr != null ? shippingAddr : "");
+                Order order = orderService.checkout(user, checkoutDto);
+                session.removeAttribute("sslTranId");
+                session.removeAttribute("sslAmount");
+                session.removeAttribute("sslShippingAddress");
+                ra.addFlashAttribute("successMessage",
+                        "Payment successful! Order #" + order.getId() + " has been placed.");
+                return "redirect:/buyer/my-orders";
+            } else {
+                ra.addFlashAttribute("errorMessage", "Payment validation failed. Please try again.");
+                return "redirect:/buyer/cart";
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Payment error: " + e.getMessage());
+            return "redirect:/buyer/cart";
+        }
+    }
+
+    @PostMapping("/payment/fail")
+    public String paymentFail(RedirectAttributes ra) {
+        ra.addFlashAttribute("errorMessage", "Payment failed. Please try again.");
+        return "redirect:/buyer/cart";
+    }
+
+    @PostMapping("/payment/cancel")
+    public String paymentCancel(RedirectAttributes ra) {
+        ra.addFlashAttribute("errorMessage", "Payment was cancelled.");
+        return "redirect:/buyer/cart";
     }
 
     /* ── My Orders ──────────────────────────────────────────────── */
