@@ -38,7 +38,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Controller
 @RequestMapping("/buyer")
 @RequiredArgsConstructor
@@ -271,7 +273,12 @@ public class BuyerController {
                 .map(i -> i.getProduct().getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        String tranId = "MKT_" + user.getId() + "_" + System.currentTimeMillis();
+        // ── FIX: embed userId AND amount in tranId so the success callback
+        // can identify the buyer and verify the amount WITHOUT relying on
+        // the HTTP session (SSLCommerz posts from its own server — no session).
+        // Format: MKT_{userId}_{totalInCents}_{timestamp}
+        long totalCents = total.multiply(BigDecimal.valueOf(100)).longValue();
+        String tranId = "MKT_" + user.getId() + "_" + totalCents + "_" + System.currentTimeMillis();
 
         Map<String, String> postData = new HashMap<>();
         postData.put("total_amount", total.toPlainString());
@@ -293,64 +300,119 @@ public class BuyerController {
         try {
             SSLCommerz sslcz = new SSLCommerz(sslStoreId, sslStorePassword, sslSandbox);
             String gatewayUrl = sslcz.initiateTransaction(postData, false);
-            session.setAttribute("sslTranId", tranId);
-            session.setAttribute("sslAmount", total.toPlainString());
+
+            // Store shipping address keyed by tranId so multiple concurrent
+            // orders from the same user don't overwrite each other.
+            session.setAttribute("ssl_addr_" + tranId, shippingAddress);
+            session.removeAttribute("sslShippingAddress"); // clean up old key
+
             return "redirect:" + gatewayUrl;
         } catch (Exception e) {
+            log.error("SSLCommerz initiation failed: {}", e.getMessage());
             ra.addFlashAttribute("errorMessage", "Payment gateway error: " + e.getMessage());
             return "redirect:/buyer/payment";
         }
     }
 
+    /**
+     * SSLCommerz POSTs here after the buyer pays.
+     *
+     * WHY this method has no Authentication parameter:
+     * This POST comes from SSLCommerz's servers, not from the buyer's browser.
+     * It carries NO session cookie, so Spring Security cannot identify the user.
+     * That is why the URL is in permitAll() in SecurityConfig.
+     * We identify everything we need from tran_id in the POST body instead.
+     */
     @PostMapping("/payment/success")
-    public String paymentSuccess(HttpServletRequest request, Authentication auth,
-                                 HttpSession session, RedirectAttributes ra) {
-        String tranId       = (String) session.getAttribute("sslTranId");
-        String amount       = (String) session.getAttribute("sslAmount");
-        String shippingAddr = (String) session.getAttribute("sslShippingAddress");
-
-        if (tranId == null || amount == null) {
-            ra.addFlashAttribute("errorMessage", "Payment session expired. Please try again.");
-            return "redirect:/buyer/cart";
-        }
-
+    public String paymentSuccess(HttpServletRequest request, Model model) {
         Map<String, String> params = new HashMap<>();
         request.getParameterMap().forEach((k, v) -> params.put(k, v[0]));
 
+        String tranId = params.get("tran_id");
+        log.info("SSLCommerz SUCCESS callback received. tran_id={}", tranId);
+
+        if (tranId == null || !tranId.startsWith("MKT_")) {
+            log.warn("Invalid tran_id in success callback: {}", tranId);
+            model.addAttribute("errorMessage", "Invalid payment response. Please contact support.");
+            return "buyer/payment-result";
+        }
+
+        // Parse userId and amount from tranId: MKT_{userId}_{totalCents}_{timestamp}
+        String[] parts = tranId.split("_");
+        // parts[0]="MKT", parts[1]=userId, parts[2]=totalCents, parts[3]=timestamp
+        if (parts.length != 4) {
+            model.addAttribute("errorMessage", "Malformed transaction ID. Please contact support.");
+            return "buyer/payment-result";
+        }
+
+        long userId;
+        String amount;
+        try {
+            userId = Long.parseLong(parts[1]);
+            long cents = Long.parseLong(parts[2]);
+            amount = BigDecimal.valueOf(cents)
+                               .divide(BigDecimal.valueOf(100))
+                               .setScale(2)
+                               .toPlainString();
+        } catch (NumberFormatException e) {
+            model.addAttribute("errorMessage", "Malformed transaction ID. Please contact support.");
+            return "buyer/payment-result";
+        }
+
+        // Look up the user by ID — no session needed
+        User user = userService.findById(userId).orElse(null);
+        if (user == null) {
+            log.error("User not found for userId={} from tran_id={}", userId, tranId);
+            model.addAttribute("errorMessage", "User account not found. Please contact support.");
+            return "buyer/payment-result";
+        }
+
+        // Validate with SSLCommerz
         try {
             SSLCommerz sslcz = new SSLCommerz(sslStoreId, sslStorePassword, sslSandbox);
             boolean valid = sslcz.orderValidate(tranId, amount, "BDT", params);
+
             if (valid) {
-                User user = currentUser(auth);
+                // Retrieve shipping address stored when payment was initiated.
+                // The session may not be available here (server-to-server POST),
+                // so fall back to the address in the SSLCommerz POST params.
+                String shippingAddress = params.getOrDefault("cus_add1", "");
+
                 CheckoutDto checkoutDto = new CheckoutDto();
-                checkoutDto.setShippingAddress(shippingAddr != null ? shippingAddr : "");
+                checkoutDto.setShippingAddress(shippingAddress);
                 Order order = orderService.checkout(user, checkoutDto);
-                session.removeAttribute("sslTranId");
-                session.removeAttribute("sslAmount");
-                session.removeAttribute("sslShippingAddress");
-                ra.addFlashAttribute("successMessage",
+
+                log.info("Order #{} placed for userId={} via SSLCommerz tran_id={}", order.getId(), userId, tranId);
+                model.addAttribute("successMessage",
                         "Payment successful! Order #" + order.getId() + " has been placed.");
-                return "redirect:/buyer/my-orders";
+                model.addAttribute("orderId", order.getId());
             } else {
-                ra.addFlashAttribute("errorMessage", "Payment validation failed. Please try again.");
-                return "redirect:/buyer/cart";
+                log.warn("SSLCommerz validation returned false for tran_id={}", tranId);
+                model.addAttribute("errorMessage",
+                        "Payment could not be verified. If money was deducted, please contact support with transaction ID: " + tranId);
             }
         } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", "Payment error: " + e.getMessage());
-            return "redirect:/buyer/cart";
+            log.error("Error processing payment success for tran_id={}: {}", tranId, e.getMessage());
+            model.addAttribute("errorMessage", "Payment error: " + e.getMessage());
         }
+
+        return "buyer/payment-result";
     }
 
     @PostMapping("/payment/fail")
-    public String paymentFail(RedirectAttributes ra) {
-        ra.addFlashAttribute("errorMessage", "Payment failed. Please try again.");
-        return "redirect:/buyer/cart";
+    public String paymentFail(HttpServletRequest request, Model model) {
+        String tranId = request.getParameter("tran_id");
+        log.warn("SSLCommerz FAIL callback. tran_id={}", tranId);
+        model.addAttribute("errorMessage", "Payment failed. Please try again.");
+        return "buyer/payment-result";
     }
 
     @PostMapping("/payment/cancel")
-    public String paymentCancel(RedirectAttributes ra) {
-        ra.addFlashAttribute("errorMessage", "Payment was cancelled.");
-        return "redirect:/buyer/cart";
+    public String paymentCancel(HttpServletRequest request, Model model) {
+        String tranId = request.getParameter("tran_id");
+        log.info("SSLCommerz CANCEL callback. tran_id={}", tranId);
+        model.addAttribute("errorMessage", "Payment was cancelled.");
+        return "buyer/payment-result";
     }
 
     /* ── My Orders ──────────────────────────────────────────────── */
